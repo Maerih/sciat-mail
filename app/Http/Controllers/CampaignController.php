@@ -13,14 +13,14 @@ class CampaignController extends Controller
 {
     public function index(Request $request): View
     {
-        $campaigns = Campaign::forWorkspace()
+        $campaigns = Campaign::forWorkspace()->regular()
             ->when(in_array($request->status, Campaign::STATUSES, true), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w->where('name', 'like', '%'.$request->q.'%')
                 ->orWhere('subject', 'like', '%'.$request->q.'%')))
             ->orderBy($request->sort === 'name' ? 'name' : 'created_at', $request->sort === 'name' ? 'asc' : 'desc')
             ->paginate(20)->withQueryString();
 
-        $statusCounts = Campaign::forWorkspace()->selectRaw('status, count(*) as c')->groupBy('status')->pluck('c', 'status');
+        $statusCounts = Campaign::forWorkspace()->regular()->selectRaw('status, count(*) as c')->groupBy('status')->pluck('c', 'status');
 
         return view('campaigns.index', compact('campaigns', 'statusCounts'));
     }
@@ -95,6 +95,7 @@ class CampaignController extends Controller
 
     public function duplicate(Campaign $campaign): RedirectResponse
     {
+        abort_if($campaign->isAutomationEmail(), 404);
         $copy = $campaign->duplicate();
 
         return redirect()->route('campaigns.setup', $copy)->with('success', 'Campaign duplicated.');
@@ -102,6 +103,7 @@ class CampaignController extends Controller
 
     public function destroy(Campaign $campaign): RedirectResponse
     {
+        abort_if($campaign->isAutomationEmail(), 404);
         abort_if($campaign->isRunning(), 409, 'Pause or cancel the campaign before deleting it.');
         $campaign->delete();
 

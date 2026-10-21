@@ -14,10 +14,10 @@ class Campaign extends Model
 {
     use BelongsToWorkspace, HasFactory, HasUid;
 
-    public const STATUSES = ['draft', 'scheduled', 'queued', 'sending', 'paused', 'done', 'cancelled', 'error'];
+    public const STATUSES = ['draft', 'scheduled', 'queued', 'sending', 'paused', 'done', 'cancelled', 'error', 'automation'];
 
     protected $fillable = [
-        'workspace_id', 'name', 'type', 'subject', 'preheader', 'from_name', 'from_email', 'reply_to', 'html', 'plain',
+        'workspace_id', 'automation_id', 'name', 'type', 'subject', 'preheader', 'from_name', 'from_email', 'reply_to', 'html', 'plain',
         'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'server_weights', 'utm', 'scheduled_at', 'sending_window',
     ];
 
@@ -35,6 +35,17 @@ class Campaign extends Model
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
         ];
+    }
+
+    /** Excludes the hidden campaigns that hold automation emails. */
+    public function scopeRegular(Builder $query): Builder
+    {
+        return $query->whereNull('automation_id');
+    }
+
+    public function isAutomationEmail(): bool
+    {
+        return $this->automation_id !== null;
     }
 
     public function audiences(): HasMany

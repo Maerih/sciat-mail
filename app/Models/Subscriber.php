@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\TriggerAutomations;
 use App\Models\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,47 @@ class Subscriber extends Model
         static::saving(function (Subscriber $s) {
             $s->email = strtolower(trim($s->email));
         });
+
+        static::created(function (Subscriber $s) {
+            if ($s->status === 'subscribed' && $s->source !== 'import') {
+                static::fireAutomation($s, 'subscribed');
+            }
+        });
+
+        static::updated(function (Subscriber $s) {
+            if ($s->wasChanged('status') && in_array($s->status, ['subscribed', 'unsubscribed'], true)) {
+                static::fireAutomation($s, $s->status);
+            }
+            if ($s->wasChanged('tags')) {
+                $before = array_map('strtolower', json_decode((string) $s->getRawOriginal('tags'), true) ?? []);
+                $after = array_map('strtolower', $s->tags ?? []);
+                foreach (array_diff($after, $before) as $tag) {
+                    static::fireAutomation($s, 'tag_added', ['tag' => $tag]);
+                }
+                foreach (array_diff($before, $after) as $tag) {
+                    static::fireAutomation($s, 'tag_removed', ['tag' => $tag]);
+                }
+            }
+            if ($s->wasChanged('data')) {
+                $before = json_decode((string) $s->getRawOriginal('data'), true) ?? [];
+                foreach ($s->data ?? [] as $field => $value) {
+                    if (($before[$field] ?? null) !== $value) {
+                        static::fireAutomation($s, 'field_updated', ['field' => $field, 'value' => (string) $value]);
+                    }
+                }
+            }
+        });
+    }
+
+    /** Queues automation triggers only when the list has an active automation listening for them. */
+    protected static function fireAutomation(Subscriber $subscriber, string $event, array $context = []): void
+    {
+        $listening = Automation::where('mail_list_id', $subscriber->mail_list_id)
+            ->where('status', 'active')->where('trigger_type', $event)->exists();
+
+        if ($listening) {
+            TriggerAutomations::dispatch($subscriber->id, $event, $context)->afterCommit();
+        }
     }
 
     public function list(): BelongsTo

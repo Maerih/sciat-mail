@@ -1,7 +1,8 @@
-<x-page-header :title="$campaign->name" :subtitle="$campaign->subject" :back="route('campaigns.index')">
+<x-page-header :title="$campaign->name" :subtitle="$campaign->subject" :back="$campaign->isAutomationEmail() ? route('automations.show', $campaign->automation_id ? \App\Models\Automation::find($campaign->automation_id) : null) : route('campaigns.index')">
     <x-slot:actions>
         <x-status-badge :status="$campaign->status" />
         <a href="{{ route('campaigns.preview', $campaign) }}" target="_blank" class="btn-secondary"><x-icon name="eye" /> Preview</a>
+        @unless ($campaign->isAutomationEmail())
         @if ($campaign->isRunning())
             <form method="POST" action="{{ route('campaigns.pause', $campaign) }}">@csrf<button class="btn-secondary">Pause</button></form>
         @endif
@@ -12,5 +13,6 @@
             <form method="POST" action="{{ route('campaigns.cancel', $campaign) }}" onsubmit="return confirm('Cancel this campaign? Remaining recipients will not be emailed.')">@csrf<button class="btn-ghost text-red-600 hover:bg-red-50">Cancel</button></form>
         @endif
         <form method="POST" action="{{ route('campaigns.duplicate', $campaign) }}">@csrf<button class="btn-secondary">Duplicate</button></form>
+        @endunless
     </x-slot:actions>
 </x-page-header>

@@ -108,6 +108,23 @@ Route::middleware('auth')->group(function () {
             Route::delete('/', [Controllers\CampaignController::class, 'destroy'])->name('destroy');
         });
 
+        // Automations
+        Route::resource('automations', Controllers\AutomationController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+        Route::prefix('automations/{automation}')->name('automations.')->group(function () {
+            Route::get('settings', [Controllers\AutomationController::class, 'settings'])->name('settings');
+            Route::put('settings', [Controllers\AutomationController::class, 'updateSettings'])->name('settings.update');
+            Route::post('activate', [Controllers\AutomationController::class, 'activate'])->name('activate');
+            Route::post('pause', [Controllers\AutomationController::class, 'pause'])->name('pause');
+            Route::post('enroll', [Controllers\AutomationController::class, 'enrollExisting'])->name('enroll');
+            Route::get('contacts', [Controllers\AutomationController::class, 'contacts'])->name('contacts');
+            Route::post('steps', [Controllers\AutomationController::class, 'addStep'])->name('steps.store');
+            Route::get('steps/{step}', [Controllers\AutomationController::class, 'editStep'])->name('step');
+            Route::put('steps/{step}', [Controllers\AutomationController::class, 'updateStep'])->name('step.update');
+            Route::delete('steps/{step}', [Controllers\AutomationController::class, 'deleteStep'])->name('step.destroy');
+            Route::get('steps/{step}/email', [Controllers\AutomationController::class, 'email'])->name('email');
+            Route::put('steps/{step}/email', [Controllers\AutomationController::class, 'updateEmail'])->name('email.update');
+        });
+
         Route::resource('templates', Controllers\TemplateController::class)->except(['show']);
         Route::get('templates/{template}/preview', [Controllers\TemplateController::class, 'preview'])->name('templates.preview');
 

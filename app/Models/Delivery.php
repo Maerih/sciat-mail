@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class Delivery extends Model
 {
     protected $fillable = [
-        'uid', 'campaign_id', 'subscriber_id', 'workspace_id', 'email', 'kind', 'status', 'sending_server_id',
+        'uid', 'campaign_id', 'subscriber_id', 'automation_run_id', 'workspace_id', 'email', 'kind', 'status', 'sending_server_id',
     ];
 
     protected function casts(): array

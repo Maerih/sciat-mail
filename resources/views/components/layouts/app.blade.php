@@ -12,6 +12,7 @@
     $nav = [
         ['Dashboard', 'dashboard', 'home', 'dashboard'],
         ['Campaigns', 'campaigns.index', 'megaphone', 'campaigns.*'],
+        ['Automations', 'automations.index', 'bolt', 'automations.*'],
         ['Templates', 'templates.index', 'template', 'templates.*'],
         'Audience',
         ['Lists', 'lists.index', 'users', 'lists.*'],
