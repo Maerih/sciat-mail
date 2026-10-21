@@ -48,6 +48,10 @@
                         <p class="help" x-show="['birthday', 'date_field'].includes(trigger)">Use a date field (YYYY-MM-DD). Add one under the list's Fields tab.</p>
                         @error('config.field')<p class="error">{{ $message }}</p>@enderror
                     </div>
+                    <div x-show="triggers[trigger].includes('url')" x-cloak class="sm:col-span-2 grid gap-4 sm:grid-cols-4">
+                        <x-field name="config[url]" type="url" label="Feed URL" :value="$config['url'] ?? ''" placeholder="https://example.com/feed" class="sm:col-span-3" />
+                        <x-field name="config[count]" type="number" min="1" max="20" label="Posts in email" :value="$config['count'] ?? 5" />
+                    </div>
                     <div x-show="triggers[trigger].includes('tag')" x-cloak><x-field name="config[tag]" label="Tag" :value="$config['tag'] ?? ''" /></div>
                     <div x-show="triggers[trigger].includes('value')" x-cloak><x-field name="config[value]" label="Changes to" :value="$config['value'] ?? '*'" help="Use * for any value, e.g. gold* matches gold and golden." /></div>
                     <div x-show="triggers[trigger].includes('offset_days')" x-cloak><x-field name="config[offset_days]" type="number" label="Days after the date" :value="$config['offset_days'] ?? 0" help="Negative = before (e.g. -3 sends three days before)." /></div>

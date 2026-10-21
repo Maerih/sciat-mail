@@ -22,7 +22,7 @@ class Campaign extends Model
 
     protected $fillable = [
         'workspace_id', 'automation_id', 'name', 'type', 'subject', 'preheader', 'from_name', 'from_email', 'reply_to', 'html', 'plain',
-        'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'spintax', 'server_weights', 'utm', 'scheduled_at', 'sending_window', 'ab_config',
+        'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'spintax', 'server_weights', 'utm', 'rss', 'scheduled_at', 'sending_window', 'ab_config',
     ];
 
     protected function casts(): array
@@ -35,6 +35,7 @@ class Campaign extends Model
             'spintax' => 'boolean',
             'server_weights' => 'array',
             'utm' => 'array',
+            'rss' => 'array',
             'sending_window' => 'array',
             'ab_config' => 'array',
             'test_ends_at' => 'datetime',
@@ -63,6 +64,19 @@ class Campaign extends Model
     public function winner(): BelongsTo
     {
         return $this->belongsTo(CampaignVariant::class, 'winner_variant_id');
+    }
+
+    /** Feed settings for RSS merge tags: the campaign's own, or its automation's RSS trigger. @return array{url?: string, count?: int}|null */
+    public function rssConfig(): ?array
+    {
+        if (! empty($this->rss['url'])) {
+            return $this->rss;
+        }
+        if ($this->automation_id && ($automation = Automation::find($this->automation_id)) && $automation->trigger_type === 'rss') {
+            return $automation->trigger_config;
+        }
+
+        return null;
     }
 
     public function isAbTest(): bool

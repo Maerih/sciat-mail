@@ -29,6 +29,7 @@ class Automation extends Model
         'tag_removed' => ['label' => 'Tag removed', 'description' => 'Starts when a tag is removed from a contact.', 'enrolls' => 'event', 'config' => ['tag']],
         'field_updated' => ['label' => 'Contact field changes', 'description' => 'Starts when a field changes to a matching value (* and ? wildcards allowed).', 'enrolls' => 'event', 'config' => ['field', 'value']],
         'weekly' => ['label' => 'Weekly recurring', 'description' => 'Every week on the chosen day and time, for every subscribed contact.', 'enrolls' => 'schedule', 'config' => ['weekday', 'time']],
+        'rss' => ['label' => 'New post in RSS feed', 'description' => 'When the feed publishes something new (checked every 30 minutes), every subscribed contact gets the journey. Use {{ RSS_ITEMS }} in emails.', 'enrolls' => 'schedule', 'config' => ['url', 'count']],
         'monthly' => ['label' => 'Monthly recurring', 'description' => 'Every month on the chosen day and time, for every subscribed contact.', 'enrolls' => 'schedule', 'config' => ['monthday', 'time']],
     ];
 
@@ -107,6 +108,7 @@ class Automation extends Model
             'field_updated' => ($c['field'] ?? '?').' changes to “'.($c['value'] ?? '*').'”',
             'weekly' => 'Every '.($days[$c['weekday'] ?? 1] ?? '').' at '.($c['time'] ?? '09:00'),
             'monthly' => 'Day '.($c['monthday'] ?? 1).' of every month at '.($c['time'] ?? '09:00'),
+            'rss' => 'New post in '.(parse_url($c['url'] ?? '', PHP_URL_HOST) ?: 'feed'),
             default => $this->triggerLabel(),
         };
     }

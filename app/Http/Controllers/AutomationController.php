@@ -351,6 +351,8 @@ class AutomationController extends Controller
             'config.weekday' => 'nullable|integer|between:1,7',
             'config.monthday' => 'nullable|integer|between:1,31',
             'config.offset_days' => 'nullable|integer|between:-365,365',
+            'config.url' => 'nullable|url|max:500',
+            'config.count' => 'nullable|integer|min:1|max:20',
         ]);
 
         $list = MailList::forWorkspace()->where('uid', $data['list'])->firstOrFail();
@@ -361,9 +363,15 @@ class AutomationController extends Controller
         $needs = Automation::TRIGGERS[$data['trigger_type']]['config'];
         $config = collect($data['config'] ?? [])->only($needs)->all();
         foreach ($needs as $key) {
-            if (in_array($key, ['field', 'tag'], true) && blank($config[$key] ?? null)) {
+            if (in_array($key, ['field', 'tag', 'url'], true) && blank($config[$key] ?? null)) {
                 throw ValidationException::withMessages(['config.'.$key => 'This trigger needs a '.$key.'.']);
             }
+        }
+
+        if ($data['trigger_type'] === 'rss') {
+            // keep the remembered newest post unless the feed changes, so nothing old is re-sent
+            $previous = $automation?->trigger_type === 'rss' && ($automation->config('url') === ($config['url'] ?? null)) ? $automation->config('last_item') : null;
+            $config = ['url' => $config['url'], 'count' => (int) ($config['count'] ?? 5), 'last_item' => $previous];
         }
 
         return [

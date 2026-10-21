@@ -104,6 +104,8 @@ class CampaignWizardController extends Controller
             'utm.campaign' => 'nullable|string|max:100',
             'utm.term' => 'nullable|string|max:100',
             'utm.content' => 'nullable|string|max:100',
+            'rss_url' => 'nullable|url|max:500',
+            'rss_count' => 'nullable|integer|min:1|max:20',
         ]);
 
         $weights = null;
@@ -124,6 +126,7 @@ class CampaignWizardController extends Controller
             'spintax' => $request->boolean('spintax'),
             'server_weights' => $weights,
             'utm' => ['enabled' => $request->boolean('utm_enabled')] + ($data['utm'] ?? []),
+            'rss' => ! empty($data['rss_url']) ? ['url' => $data['rss_url'], 'count' => (int) ($data['rss_count'] ?? 5)] : null,
         ])->save();
 
         return redirect()->route('campaigns.content', $campaign);

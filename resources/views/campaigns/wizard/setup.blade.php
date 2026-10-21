@@ -63,6 +63,15 @@
             </div>
         </div>
 
+        <div class="card card-body space-y-3">
+            <h2 class="card-title">RSS feed (optional)</h2>
+            <p class="-mt-1 text-sm text-gray-500">Pull the latest blog or podcast posts into this email with <code>&#123;&#123; RSS_ITEMS &#125;&#125;</code>, <code>&#123;&#123; RSS_LATEST_TITLE &#125;&#125;</code> or <code>&#123;&#123; RSS_LATEST_URL &#125;&#125;</code>.</p>
+            <div class="grid gap-3 sm:grid-cols-4">
+                <x-field name="rss_url" type="url" label="Feed URL" :value="$campaign->rss['url'] ?? ''" placeholder="https://example.com/feed" class="sm:col-span-3" />
+                <x-field name="rss_count" type="number" min="1" max="20" label="Posts" :value="$campaign->rss['count'] ?? 5" />
+            </div>
+        </div>
+
         <div class="flex justify-between">
             <a href="{{ route('campaigns.recipients', $campaign) }}" class="btn-secondary">Back</a>
             <button class="btn-primary">Save & continue</button>

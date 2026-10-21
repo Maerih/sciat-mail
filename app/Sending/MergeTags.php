@@ -11,6 +11,9 @@ use App\Models\Subscriber;
  */
 class MergeTags
 {
+    /** Tags whose values are trusted HTML rendered by the platform. */
+    public const RAW_HTML = ['RSS_ITEMS'];
+
     public static function render(string $content, array $values, bool $escape = true): string
     {
         return preg_replace_callback('/\{\{\s*([A-Z0-9_]+)\s*(?:\|\s*([^}]*?)\s*)?\}\}/', function ($m) use ($values, $escape) {
@@ -22,8 +25,8 @@ class MergeTags
                 $value = $m[2];
             }
 
-            // URLs are inserted raw; everything else is escaped for HTML bodies
-            return $escape && ! str_ends_with($m[1], '_URL') ? e($value) : $value;
+            // URLs and pre-rendered HTML blocks are inserted raw; everything else is escaped for HTML bodies
+            return $escape && ! str_ends_with($m[1], '_URL') && ! in_array($m[1], self::RAW_HTML, true) ? e($value) : $value;
         }, $content);
     }
 
@@ -52,6 +55,9 @@ class MergeTags
             'CAMPAIGN_NAME' => 'Campaign name',
             'CONTACT_ADDRESS' => 'Postal address',
             'CURRENT_YEAR' => 'Current year',
+            'RSS_ITEMS' => 'RSS: latest posts (needs a feed)',
+            'RSS_LATEST_TITLE' => 'RSS: newest post title',
+            'RSS_LATEST_URL' => 'RSS: newest post link',
         ];
         foreach ($list?->fields ?? [] as $field) {
             $tags['SUBSCRIBER_'.$field->tag] = $field->label;

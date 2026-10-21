@@ -11,8 +11,10 @@ use App\Models\Delivery;
 use App\Models\MailList;
 use App\Models\Segment;
 use App\Models\Subscriber;
+use App\Services\RssFeed;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -175,7 +177,7 @@ class Engine
         $now ??= now();
 
         Automation::where('status', 'active')
-            ->whereIn('trigger_type', ['birthday', 'date_field', 'weekly', 'monthly'])
+            ->whereIn('trigger_type', ['birthday', 'date_field', 'weekly', 'monthly', 'rss'])
             ->with('workspace', 'list')
             ->each(fn (Automation $automation) => $this->runScheduledTrigger($automation, $now));
 
@@ -189,6 +191,10 @@ class Engine
 
     public function runScheduledTrigger(Automation $automation, Carbon $now): int
     {
+        if ($automation->trigger_type === 'rss') {
+            return $this->runRssTrigger($automation);
+        }
+
         $local = $now->copy()->setTimezone($automation->workspace->timezone);
         if ($local->format('H:i') < $automation->config('time', '09:00')) {
             return 0;
@@ -241,6 +247,41 @@ class Engine
                 }
             }
         });
+
+        return $count;
+    }
+
+    /**
+     * Enrolls the list when the feed's newest item changes. The first check only remembers the
+     * newest item, so activating an automation never mails out old posts.
+     */
+    public function runRssTrigger(Automation $automation): int
+    {
+        if (! Cache::add('rss-check:'.$automation->id, true, now()->addMinutes(30))) {
+            return 0;
+        }
+
+        $latest = app(RssFeed::class)->items((string) $automation->config('url'), 1, fresh: true)[0]['id'] ?? null;
+        if ($latest === null || $latest === $automation->config('last_item')) {
+            return 0;
+        }
+
+        $isBaseline = $automation->config('last_item') === null;
+        $automation->forceFill(['trigger_config' => array_merge($automation->trigger_config ?? [], ['last_item' => $latest])])->saveQuietly();
+        if ($isBaseline) {
+            return 0;
+        }
+
+        $count = 0;
+        $ref = 'rss:'.substr(md5($latest), 0, 16);
+        $automation->list->subscribers()->where('status', 'subscribed')->select('subscribers.*')
+            ->chunkById(500, function ($subscribers) use ($automation, $ref, &$count) {
+                foreach ($subscribers as $subscriber) {
+                    if ($this->enroll($automation, $subscriber, $ref)) {
+                        $count++;
+                    }
+                }
+            });
 
         return $count;
     }
