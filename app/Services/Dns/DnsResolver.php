@@ -9,4 +9,7 @@ interface DnsResolver
 
     /** @return string[] CNAME targets without trailing dot */
     public function cname(string $host): array;
+
+    /** True when the domain can receive mail (MX record, or an A record as implicit MX). */
+    public function mx(string $domain): bool;
 }

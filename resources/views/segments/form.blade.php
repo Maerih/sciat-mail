@@ -26,6 +26,11 @@
                             <template x-for="s in statuses"><option :value="s" x-text="s" :selected="s === c.value"></option></template>
                         </select>
                     </template>
+                    <template x-if="kind(c.field) === 'verification'">
+                        <select class="input w-44" :name="`conditions[${i}][value]`" x-model="c.value" @change="refresh()">
+                            <template x-for="s in verifications"><option :value="s" x-text="s" :selected="s === c.value"></option></template>
+                        </select>
+                    </template>
                     <template x-if="kind(c.field) === 'date'"><input type="date" class="input w-44" :name="`conditions[${i}][value]`" x-model="c.value" @change="refresh()"></template>
                     <template x-if="kind(c.field) === 'activity'"><input type="number" min="1" class="input w-28" placeholder="days" :name="`conditions[${i}][value]`" x-model="c.value" @input.debounce.500ms="refresh()"></template>
                     <template x-if="(kind(c.field) === 'text' && !['blank', 'not_blank'].includes(c.operator)) || kind(c.field) === 'tag'">
@@ -48,7 +53,7 @@
             function segmentBuilder(conditions, matching) {
                 return {
                     conditions, matching, count: null,
-                    fields: @js($fields), operators: @js($operators), statuses: @js($statuses),
+                    fields: @js($fields), operators: @js($operators), statuses: @js($statuses), verifications: @js($verifications),
                     kind(field) { return this.fields[field]?.kind ?? 'text' },
                     ops(field) { return this.operators[this.kind(field)] },
                     async refresh() {

@@ -24,6 +24,20 @@
             <h2 class="card-title">Engagement</h2>
             <div class="flex justify-between text-sm"><span class="text-gray-600">Average open rate</span><span class="font-semibold">{{ $openRate }}%</span></div>
             <div class="flex justify-between text-sm"><span class="text-gray-600">Average click rate</span><span class="font-semibold">{{ $clickRate }}%</span></div>
+            <div class="border-t border-gray-100 pt-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-900">Email verification</h3>
+                    @if (in_array($list->verification_job_status, ['queued', 'running']))
+                        <span class="badge-blue">{{ ucfirst($list->verification_job_status) }}…</span>
+                    @else
+                        <form method="POST" action="{{ route('lists.verify', $list) }}">@csrf<button class="btn-secondary btn-sm">Verify list</button></form>
+                    @endif
+                </div>
+                @foreach (\App\Models\VerificationServer::STATUSES as $v)
+                    <a href="{{ route('lists.subscribers.index', [$list, 'verification' => $v]) }}" class="mt-1 flex justify-between text-sm text-gray-600 hover:text-gray-900"><span>{{ ucfirst($v) }}</span><span class="tabular-nums">{{ number_format($verification[$v] ?? 0) }}</span></a>
+                @endforeach
+                <p class="help">Undeliverable addresses are skipped by every campaign.</p>
+            </div>
             <div class="border-t border-gray-100 pt-4 text-sm text-gray-600">
                 <div class="flex justify-between"><span>Double opt-in</span><span>{{ $list->double_optin ? 'On' : 'Off' }}</span></div>
                 <div class="mt-1 flex justify-between"><span>Welcome email</span><span>{{ $list->send_welcome_email ? 'On' : 'Off' }}</span></div>

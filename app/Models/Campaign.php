@@ -161,6 +161,7 @@ class Campaign extends Model
 
         $query = Subscriber::query()
             ->where('subscribers.status', 'subscribed')
+            ->where('subscribers.verification_status', '!=', 'undeliverable')
             ->whereIn('mail_list_id', MailList::where('workspace_id', $workspaceId)->select('id'))
             ->whereNotExists(fn ($q) => $q->from('blacklists')
                 ->whereColumn('blacklists.email', 'subscribers.email')

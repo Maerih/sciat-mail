@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('lists/{list}')->name('lists.')->scopeBindings()->group(function () {
             Route::get('/', [Controllers\ListController::class, 'show'])->name('show');
             Route::get('fields', [Controllers\ListFieldController::class, 'index'])->name('fields');
+            Route::post('verify', [Controllers\VerificationServerController::class, 'verifyList'])->name('verify');
             Route::put('fields', [Controllers\ListFieldController::class, 'update'])->name('fields.update');
 
             Route::get('subscribers/export', [Controllers\SubscriberController::class, 'export'])->name('subscribers.export');
@@ -145,6 +146,8 @@ Route::middleware('auth')->group(function () {
 
             Route::resource('blacklist', Controllers\BlacklistController::class)->only(['index', 'store', 'destroy']);
             Route::resource('warmup', Controllers\WarmupStrategyController::class)->except(['show']);
+            Route::post('verification/{verification}/default', [Controllers\VerificationServerController::class, 'makeDefault'])->name('verification.default');
+            Route::resource('verification', Controllers\VerificationServerController::class)->only(['index', 'store', 'destroy']);
         });
     });
 });

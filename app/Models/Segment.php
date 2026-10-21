@@ -26,6 +26,7 @@ class Segment extends Model
             'greater' => 'is greater than', 'less' => 'is less than',
         ],
         'status' => ['equal' => 'is', 'not_equal' => 'is not'],
+        'verification' => ['equal' => 'is', 'not_equal' => 'is not'],
         'tag' => ['has' => 'has tag', 'not_has' => 'does not have tag'],
         'date' => ['before' => 'is before', 'after' => 'is after'],
         'activity' => ['within' => 'in the last N days', 'not_within' => 'not in the last N days'],
@@ -36,6 +37,7 @@ class Segment extends Model
     public const SPECIAL_FIELDS = [
         'status' => ['label' => 'Status', 'kind' => 'status'],
         'tags' => ['label' => 'Tags', 'kind' => 'tag'],
+        'verification_status' => ['label' => 'Verification result', 'kind' => 'verification'],
         'created_at' => ['label' => 'Date added', 'kind' => 'date'],
         'last_open_at' => ['label' => 'Last opened', 'kind' => 'activity'],
         'last_click_at' => ['label' => 'Last clicked', 'kind' => 'activity'],
@@ -80,6 +82,10 @@ class Segment extends Model
         switch ($field) {
             case 'status':
                 $q->where('status', $op === 'not_equal' ? '!=' : '=', $value);
+
+                return;
+            case 'verification_status':
+                $q->where('verification_status', $op === 'not_equal' ? '!=' : '=', $value);
 
                 return;
             case 'tags':

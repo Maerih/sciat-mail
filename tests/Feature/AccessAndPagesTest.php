@@ -146,6 +146,11 @@ class AccessAndPagesTest extends TestCase
                 };
             }
 
+            public function mx(string $domain): bool
+            {
+                return true;
+            }
+
             public function cname(string $host): array
             {
                 return $host === 'links.example.com' ? ['localhost'] : [];

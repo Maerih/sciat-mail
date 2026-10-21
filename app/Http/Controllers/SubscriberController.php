@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendListEmail;
+use App\Jobs\VerifySubscribers;
 use App\Models\Blacklist;
 use App\Models\MailList;
 use App\Models\Segment;
 use App\Models\Subscriber;
+use App\Models\VerificationServer;
 use App\Services\SubscriptionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +25,7 @@ class SubscriberController extends Controller
         'subscribe' => 'Subscribe',
         'unsubscribe' => 'Unsubscribe',
         'confirm_email' => 'Resend confirmation email',
+        'verify' => 'Verify email addresses',
         'copy' => 'Copy to list',
         'move' => 'Move to list',
         'blacklist' => 'Blacklist',
@@ -140,6 +143,13 @@ class SubscriberController extends Controller
         $tags = $this->parseTags($data['tags'] ?? '');
         $count = 0;
 
+        if ($data['action'] === 'verify') {
+            $ids = $query->pluck('id')->all();
+            VerifySubscribers::dispatch($list->id, $ids);
+
+            return back()->with('success', number_format(count($ids)).' address(es) queued for verification.');
+        }
+
         $query->chunkById(500, function ($subscribers) use ($data, $list, $target, $tags, &$count) {
             foreach ($subscribers as $subscriber) {
                 $count++;
@@ -192,6 +202,7 @@ class SubscriberController extends Controller
         return $query
             ->when(in_array($request->status, Subscriber::STATUSES, true), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('tag'), fn ($q) => $q->whereJsonContains('tags', $request->tag))
+            ->when(in_array($request->verification, VerificationServer::STATUSES, true), fn ($q) => $q->where('verification_status', $request->verification))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = '%'.addcslashes($request->q, '%_\\').'%';
                 $q->where(fn ($w) => $w->where('email', 'like', $term)

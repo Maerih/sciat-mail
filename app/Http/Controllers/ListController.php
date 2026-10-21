@@ -59,6 +59,7 @@ class ListController extends Controller
             'list' => $list,
             'counts' => $counts,
             'total' => array_sum($counts),
+            'verification' => $list->subscribers()->selectRaw('verification_status, count(*) as c')->groupBy('verification_status')->pluck('c', 'verification_status'),
             'days' => $days,
             'openRate' => $engagement->sent ? round($engagement->opened / $engagement->sent * 100, 1) : 0,
             'clickRate' => $engagement->sent ? round($engagement->clicked / $engagement->sent * 100, 1) : 0,

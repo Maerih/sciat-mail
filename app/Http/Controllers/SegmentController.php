@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MailList;
 use App\Models\Segment;
 use App\Models\Subscriber;
+use App\Models\VerificationServer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,7 +69,8 @@ class SegmentController extends Controller
             ->merge($list->fields->mapWithKeys(fn ($f) => [$f->tag => ['label' => $f->label, 'kind' => 'text']]))
             ->merge(Segment::SPECIAL_FIELDS);
 
-        return ['fields' => $fields, 'operators' => Segment::OPERATORS, 'statuses' => Subscriber::STATUSES];
+        return ['fields' => $fields, 'operators' => Segment::OPERATORS, 'statuses' => Subscriber::STATUSES,
+            'verifications' => VerificationServer::STATUSES];
     }
 
     /** @return array<string, mixed> */

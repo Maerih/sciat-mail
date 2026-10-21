@@ -1,7 +1,7 @@
 <x-layouts.app :title="$list->name.' subscribers'">
     <x-page-header :title="$list->name" :back="route('lists.index')">
         <x-slot:actions>
-            <a href="{{ route('lists.subscribers.export', [$list] + request()->only('status', 'q', 'tag', 'segment')) }}" class="btn-secondary"><x-icon name="download" /> Export CSV</a>
+            <a href="{{ route('lists.subscribers.export', [$list] + request()->only('status', 'q', 'tag', 'segment', 'verification')) }}" class="btn-secondary"><x-icon name="download" /> Export CSV</a>
             <a href="{{ route('lists.subscribers.create', $list) }}" class="btn-primary"><x-icon name="plus" /> Add subscriber</a>
         </x-slot:actions>
     </x-page-header>
@@ -24,6 +24,10 @@
                 <option value="">All subscribers</option>
                 @foreach ($segments as $segment)<option value="{{ $segment->uid }}" @selected(request('segment') === $segment->uid)>{{ $segment->name }}</option>@endforeach
             </select>
+            <select name="verification" class="input w-auto">
+                <option value="">Any verification</option>
+                @foreach (\App\Models\VerificationServer::STATUSES as $v)<option value="{{ $v }}" @selected(request('verification') === $v)>{{ ucfirst($v) }}</option>@endforeach
+            </select>
             <select name="sort" class="input w-auto">
                 <option value="">Newest</option>
                 <option value="email" @selected(request('sort') === 'email')>Email</option>
@@ -32,7 +36,7 @@
             <button class="btn-secondary"><x-icon name="filter" /> Filter</button>
         </form>
 
-        <form method="POST" action="{{ route('lists.subscribers.bulk', [$list] + request()->only('status', 'q', 'tag', 'segment')) }}"
+        <form method="POST" action="{{ route('lists.subscribers.bulk', [$list] + request()->only('status', 'q', 'tag', 'segment', 'verification')) }}"
               x-show="selected.length" x-cloak class="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-brand-50/60 px-4 py-2.5 text-sm"
               @submit="if (action === 'delete' && !confirm('Delete the selected subscribers?')) $event.preventDefault()">
             @csrf
@@ -72,7 +76,11 @@
                                 <td><input type="checkbox" data-row value="{{ $subscriber->uid }}" x-model="selected" class="rounded border-gray-300 text-brand-600"></td>
                                 <td><a href="{{ route('lists.subscribers.show', [$list, $subscriber]) }}" class="font-medium text-gray-900 hover:text-brand-600">{{ $subscriber->email }}</a></td>
                                 @foreach ($fields->take(3) as $field)<td>{{ $subscriber->field($field->tag) }}</td>@endforeach
-                                <td><x-status-badge :status="$subscriber->status" /></td>
+                                <td><x-status-badge :status="$subscriber->status" />
+                                    @if ($subscriber->verification_status !== 'unverified')
+                                        <span title="{{ $subscriber->verification_reason }}" @class(['badge ml-1', 'bg-emerald-50 text-emerald-700' => $subscriber->verification_status === 'deliverable', 'bg-amber-50 text-amber-700' => in_array($subscriber->verification_status, ['risky', 'unknown']), 'bg-red-50 text-red-700' => $subscriber->verification_status === 'undeliverable'])>{{ $subscriber->verification_status }}</span>
+                                    @endif
+                                </td>
                                 <td>@foreach ($subscriber->tags ?? [] as $tag)<span class="badge-purple mr-1">{{ $tag }}</span>@endforeach</td>
                                 <td class="whitespace-nowrap text-gray-500">{{ $subscriber->created_at->format('M j, Y') }}</td>
                             </tr>
