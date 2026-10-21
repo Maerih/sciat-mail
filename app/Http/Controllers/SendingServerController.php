@@ -99,6 +99,7 @@ class SendingServerController extends Controller
             'hourly_limit' => 'nullable|integer|min:1',
             'daily_limit' => 'nullable|integer|min:1',
             'default_from_email' => 'nullable|email',
+            'bounce_address' => 'nullable|email',
             'warmup_strategy_id' => ['nullable', 'integer', Rule::exists('warmup_strategies', 'id')
                 ->where(fn ($q) => $q->whereNull('workspace_id')->orWhere('workspace_id', Workspace::current()->id))],
             'warmup_started_on' => 'nullable|date',

@@ -18,7 +18,8 @@ class Dispatcher
     /** @return string|null provider message id */
     public function send(Message $message, SendingServer $server, string $from, string $to): ?string
     {
-        $envelope = new Envelope(new Address($from), [new Address($to)]);
+        // Bounces go to the server's bounce mailbox (Return-Path) when one is configured
+        $envelope = new Envelope(new Address($server->bounce_address ?: $from), [new Address($to)]);
 
         try {
             $sent = $this->transports->for($server)->send($message, $envelope);

@@ -15,7 +15,7 @@ class SendingServer extends Model
 
     protected $fillable = [
         'workspace_id', 'name', 'type', 'config', 'status', 'hourly_limit', 'daily_limit', 'default_from_email',
-        'warmup_strategy_id', 'warmup_started_on',
+        'warmup_strategy_id', 'warmup_started_on', 'bounce_address',
     ];
 
     protected $hidden = ['config', 'webhook_secret'];

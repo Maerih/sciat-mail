@@ -13,6 +13,9 @@
                         <select name="status" class="input"><option value="active" @selected($server->status === 'active')>Active</option><option value="inactive" @selected($server->status === 'inactive')>Inactive</option></select>
                     </div>
                     <x-field name="default_from_email" type="email" label="Default test sender" :value="$server->default_from_email" help="Must be allowed by the provider." />
+ @if ($server->usesSmtp() || ! $server->exists)
+                    <x-field name="bounce_address" type="email" label="Bounce address (Return-Path)" :value="$server->bounce_address" help="SMTP only: bounces are sent here. Add this mailbox under Sending → Bounce handlers." />
+                    @endif
                     <x-field name="hourly_limit" type="number" min="1" label="Hourly limit" :value="$server->hourly_limit" help="Leave empty for no limit." />
                     <x-field name="daily_limit" type="number" min="1" label="Daily limit" :value="$server->daily_limit" help="Respect your provider's quota (e.g. SES sandbox: 200/day)." />
                 </div>

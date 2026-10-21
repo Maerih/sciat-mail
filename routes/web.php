@@ -153,6 +153,8 @@ Route::middleware('auth')->group(function () {
 
             Route::resource('blacklist', Controllers\BlacklistController::class)->only(['index', 'store', 'destroy']);
             Route::resource('warmup', Controllers\WarmupStrategyController::class)->except(['show']);
+            Route::post('bounce-handlers/{bounceHandler}/check', [Controllers\BounceHandlerController::class, 'check'])->name('bounce-handlers.check');
+            Route::resource('bounce-handlers', Controllers\BounceHandlerController::class)->only(['index', 'store', 'destroy']);
             Route::post('verification/{verification}/default', [Controllers\VerificationServerController::class, 'makeDefault'])->name('verification.default');
             Route::resource('verification', Controllers\VerificationServerController::class)->only(['index', 'store', 'destroy']);
         });

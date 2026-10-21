@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Sending\Throttle;
 use App\Sending\TrackingUrls;
 use App\Sending\TransportFactory;
+use App\Services\Bounces\ImapMailbox;
+use App\Services\Bounces\Mailbox;
 use App\Services\Dns\DnsResolver;
 use App\Services\Dns\SystemDnsResolver;
 use Illuminate\Pagination\Paginator;
@@ -15,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(DnsResolver::class, SystemDnsResolver::class);
+        $this->app->bind(Mailbox::class, ImapMailbox::class);
         // One per worker process so SMTP connections are reused across messages
         $this->app->singleton(TransportFactory::class);
         $this->app->singleton(Throttle::class);

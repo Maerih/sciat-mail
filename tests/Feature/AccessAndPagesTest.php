@@ -207,6 +207,8 @@ class AccessAndPagesTest extends TestCase
             route('sending.servers.index'), route('sending.servers.select'), route('sending.servers.edit', $server),
             route('sending.domains.index'), route('sending.domains.show', $domain), route('sending.tracking-domains.index'),
             route('sending.blacklist.index'), route('workspaces.edit'), route('workspaces.index'), route('team.index'), route('profile.edit'),
+            route('automations.index'), route('automations.create'), route('sending.warmup.index'), route('sending.warmup.create'),
+            route('sending.verification.index'), route('sending.bounce-handlers.index'), route('campaigns.builder', $draft),
         ];
         foreach (array_keys(SendingServer::TYPES) as $type) {
             $pages[] = route('sending.servers.create', ['type' => $type]);

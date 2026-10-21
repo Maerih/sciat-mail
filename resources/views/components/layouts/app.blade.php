@@ -23,6 +23,7 @@
         ['Tracking domains', 'sending.tracking-domains.index', 'link', 'sending.tracking-domains.*'],
         ['IP warmup', 'sending.warmup.index', 'clock', 'sending.warmup.*'],
         ['Email verification', 'sending.verification.index', 'check', 'sending.verification.*'],
+        ['Bounce handlers', 'sending.bounce-handlers.index', 'envelope', 'sending.bounce-handlers.*'],
         ['Blacklist', 'sending.blacklist.index', 'ban', 'sending.blacklist.*'],
         'Settings',
         ['Client settings', 'workspaces.edit', 'cog', 'workspaces.edit'],
