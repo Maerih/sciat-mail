@@ -11,7 +11,7 @@ class DeliveryEvent extends Model
 
     public const TYPES = ['open', 'click', 'bounce', 'complaint', 'unsubscribe'];
 
-    protected $fillable = ['type', 'subtype', 'url', 'ip', 'user_agent', 'detail', 'campaign_id', 'subscriber_id'];
+    protected $fillable = ['type', 'subtype', 'url', 'ip', 'user_agent', 'device', 'os', 'client', 'country', 'detail', 'campaign_id', 'subscriber_id'];
 
     protected function casts(): array
     {

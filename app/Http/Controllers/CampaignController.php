@@ -77,7 +77,12 @@ class CampaignController extends Controller
         $bounceTypes = $campaign->events()->where('type', 'bounce')
             ->selectRaw('subtype, count(*) as c')->groupBy('subtype')->pluck('c', 'subtype');
 
+        // Unique readers per dimension, from opens and clicks (a click implies an open)
+        $breakdown = fn (string $column) => $campaign->events()->toBase()->whereIn('type', ['open', 'click'])->whereNotNull($column)
+            ->selectRaw("{$column} as label, count(distinct delivery_id) as readers")->groupBy($column)->orderByDesc('readers')->limit(8)->pluck('readers', 'label');
+
         return view('campaigns.show', [
+            'breakdowns' => ['Email app' => $breakdown('client'), 'Device' => $breakdown('device'), 'Operating system' => $breakdown('os'), 'Country' => $breakdown('country')],
             'campaign' => $campaign->load('variants'),
             'variantStats' => $campaign->isAbTest() ? $campaign->variantStats() : [],
             'stats' => $campaign->stats(),

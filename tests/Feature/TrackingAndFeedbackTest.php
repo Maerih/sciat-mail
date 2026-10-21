@@ -179,4 +179,20 @@ class TrackingAndFeedbackTest extends TestCase
 
         $this->assertSame('sent', $this->delivery->fresh()->status);
     }
+
+    public function test_opens_record_device_client_and_cdn_country_and_report_breaks_them_down(): void
+    {
+        $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148', 'CF-IPCountry' => 'KE'])
+            ->get('/t/o/'.$this->delivery->uid.'.gif');
+        $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (via ggpht.com GoogleImageProxy)', 'CF-IPCountry' => 'XX'])
+            ->get($this->urls->click($this->delivery, 'https://shop.example.com'));
+
+        $this->assertDatabaseHas('delivery_events', ['type' => 'open', 'device' => 'mobile', 'os' => 'iOS', 'client' => 'Apple Mail', 'country' => 'KE']);
+        $this->assertDatabaseHas('delivery_events', ['type' => 'click', 'device' => 'proxy', 'client' => 'Gmail', 'country' => null]);
+
+        $this->signInTo($this->delivery->workspace);
+        $this->get(route('campaigns.show', $this->delivery->campaign))
+            ->assertOk()->assertSee('Apple Mail')->assertSee('Kenya')->assertSee('Hidden by mail proxy');
+        $this->get(route('campaigns.log', [$this->delivery->campaign, 'opens']))->assertOk()->assertSee('Mobile · iOS');
+    }
 }

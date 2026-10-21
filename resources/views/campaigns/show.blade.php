@@ -92,6 +92,26 @@
         </div>
     </div>
 
+    @if (collect($breakdowns)->flatten()->isNotEmpty())
+        <div class="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            @foreach ($breakdowns as $title => $rows)
+                <div class="card card-body">
+                    <h2 class="card-title mb-3">{{ $title }}</h2>
+                    @php $max = max(1, $rows->max() ?? 1); $labels = ['proxy' => 'Hidden by mail proxy', 'desktop' => 'Desktop', 'mobile' => 'Mobile', 'tablet' => 'Tablet']; @endphp
+                    @forelse ($rows as $label => $readers)
+                        <div class="mb-2">
+                            <div class="flex justify-between text-sm"><span class="truncate text-gray-700">{{ $title === 'Country' ? config('countries.'.$label, $label) : ($labels[$label] ?? $label) }}</span><span class="tabular-nums text-gray-500">{{ number_format($readers) }}</span></div>
+                            <div class="mt-1 h-1.5 rounded-full bg-gray-100"><div class="h-1.5 rounded-full bg-brand-500" style="width: {{ round($readers / $max * 100) }}%"></div></div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-400">{{ $title === 'Country' ? 'Needs a CDN country header (e.g. Cloudflare).' : 'No data yet.' }}</p>
+                    @endforelse
+                </div>
+            @endforeach
+        </div>
+        <p class="help mt-2">Gmail, Yahoo and Apple Mail Privacy Protection load images through proxies, which hide the reader's device and location.</p>
+    @endif
+
     <div class="card mt-6 overflow-x-auto">
         <div class="card-header"><h2 class="card-title">Top links</h2><a href="{{ route('campaigns.log', [$campaign, 'clicks']) }}" class="text-sm text-brand-600 hover:underline">Click log &rarr;</a></div>
         @if ($topLinks->isEmpty())

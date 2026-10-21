@@ -14,6 +14,14 @@ class EventRecorder
 {
     public function __construct(protected SubscriptionService $subscriptions) {}
 
+    /** Device/OS/client from the user agent; country from a trusted CDN header when present. @return array<string, ?string> */
+    protected function context(?string $agent): array
+    {
+        $country = strtoupper((string) request()?->header('CF-IPCountry', request()?->header('CloudFront-Viewer-Country', '')));
+
+        return UserAgent::parse($agent) + ['country' => preg_match('/^[A-Z]{2}$/', $country) && ! in_array($country, ['XX', 'T1'], true) ? $country : null];
+    }
+
     /** @return array<string, mixed> */
     protected function payload(Delivery $delivery, array $extra = []): array
     {
@@ -32,7 +40,7 @@ class EventRecorder
         if ($delivery->opened_at === null) {
             Webhooks::dispatch($delivery->workspace_id, 'email.opened', $this->payload($delivery));
         }
-        $delivery->logEvent('open', ['ip' => $ip, 'user_agent' => mb_substr((string) $agent, 0, 500)]);
+        $delivery->logEvent('open', ['ip' => $ip, 'user_agent' => mb_substr((string) $agent, 0, 500)] + $this->context($agent));
         $now = now();
         Delivery::whereKey($delivery->id)->update([
             'open_count' => DB::raw('open_count + 1'),
@@ -43,7 +51,7 @@ class EventRecorder
 
     public function click(Delivery $delivery, string $url, ?string $ip, ?string $agent): void
     {
-        $delivery->logEvent('click', ['url' => mb_substr($url, 0, 2000), 'ip' => $ip, 'user_agent' => mb_substr((string) $agent, 0, 500)]);
+        $delivery->logEvent('click', ['url' => mb_substr($url, 0, 2000), 'ip' => $ip, 'user_agent' => mb_substr((string) $agent, 0, 500)] + $this->context($agent));
         Webhooks::dispatch($delivery->workspace_id, 'email.clicked', $this->payload($delivery, ['url' => $url]));
         $now = now();
         // a click implies an open even when images were blocked

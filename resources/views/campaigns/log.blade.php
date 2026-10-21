@@ -32,7 +32,7 @@
                         @if ($log === 'clicks')<th>URL</th>@endif
                         @if (in_array($log, ['bounces', 'unsubscribes']))<th>Type</th>@endif
                         @if (in_array($log, ['bounces', 'complaints']))<th>Detail</th>@endif
-                        @if (in_array($log, ['opens', 'clicks']))<th>IP</th><th>Device</th>@endif
+                        @if (in_array($log, ['opens', 'clicks']))<th>Email app</th><th>Device</th><th>Country</th><th>IP</th>@endif
                     </tr></thead>
                     <tbody>
                         @forelse ($rows as $row)
@@ -42,7 +42,12 @@
                                 @if ($log === 'clicks')<td class="max-w-sm truncate">{{ $row->url }}</td>@endif
                                 @if (in_array($log, ['bounces', 'unsubscribes']))<td>{{ $row->subtype }}</td>@endif
                                 @if (in_array($log, ['bounces', 'complaints']))<td class="max-w-sm truncate text-xs" title="{{ $row->detail }}">{{ $row->detail }}</td>@endif
-                                @if (in_array($log, ['opens', 'clicks']))<td>{{ $row->ip }}</td><td class="max-w-xs truncate text-xs text-gray-500" title="{{ $row->user_agent }}">{{ $row->user_agent }}</td>@endif
+                                @if (in_array($log, ['opens', 'clicks']))
+                                    <td title="{{ $row->user_agent }}">{{ $row->client ?? '—' }}</td>
+                                    <td>{{ $row->device === 'proxy' ? 'Proxy' : (trim(ucfirst((string) $row->device).' '.($row->os ? '· '.$row->os : '')) ?: '—') }}</td>
+                                    <td>{{ $row->country ?? '—' }}</td>
+                                    <td class="text-xs text-gray-500">{{ $row->ip }}</td>
+                                @endif
                             </tr>
                         @empty
                             <tr><td colspan="6" class="py-8 text-center text-gray-500">Nothing here yet.</td></tr>
