@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Jobs\LaunchCampaign;
 use App\Models\Campaign;
+use App\Models\CampaignVariant;
 use App\Models\SendingDomain;
 use App\Sending\ServerPicker;
 
@@ -41,6 +42,14 @@ class CampaignService
                 (bool) $domain => $add('sender', 'Sender', 'warning', 'The sender domain is added but DNS is not fully verified yet', 'setup'),
                 default => $add('sender', 'Sender', 'warning', 'The sender domain is not authenticated. Add it under Sending → Domains to improve inbox placement.', 'setup'),
             };
+        }
+
+        if ($campaign->isAbTest()) {
+            $variants = $campaign->variants;
+            $variants->count() >= 2
+                ? $add('variants', 'A/B variants', 'ok', $variants->count().' variants · '.$campaign->abSetting('test_percent').'% test group · winner by '
+                    .$campaign->abSetting('metric').' after '.$campaign->abSetting('wait_hours').'h', 'variants')
+                : $add('variants', 'A/B variants', 'error', 'Add at least two variants to compare', 'variants');
         }
 
         $content = $campaign->isPlain() ? $campaign->plain : $campaign->html;
@@ -102,11 +111,41 @@ class CampaignService
         $campaign->deliveries()->where('status', 'pending')->update(['status' => 'skipped', 'error' => 'Campaign cancelled']);
     }
 
-    /** Called every minute by the scheduler. */
+    /**
+     * Ends an A/B test: the variant with the best open (or click) rate wins — or the one chosen
+     * manually — and every recipient outside the test group gets the winning version.
+     */
+    public function pickWinner(Campaign $campaign, ?CampaignVariant $variant = null): CampaignVariant
+    {
+        if (! $variant) {
+            $metric = $campaign->abSetting('metric') === 'clicks' ? 'click_rate' : 'open_rate';
+            $stats = $campaign->variantStats();
+            $variant = $campaign->variants->sortBy([
+                fn ($a, $b) => $stats[$b->id][$metric] <=> $stats[$a->id][$metric],
+                fn ($a, $b) => $stats[$b->id]['opened'] <=> $stats[$a->id]['opened'],
+                fn ($a, $b) => $a->id <=> $b->id,
+            ])->first();
+        }
+
+        $campaign->deliveries()->where('status', 'pending')->whereNull('variant_id')->update(['variant_id' => $variant->id]);
+        $campaign->forceFill(['winner_variant_id' => $variant->id, 'test_ends_at' => $campaign->test_ends_at ?? now()])->save();
+
+        if ($campaign->status === 'testing') {
+            $campaign->forceFill(['status' => 'sending'])->save();
+            LaunchCampaign::dispatchBatches($campaign);
+        }
+
+        return $variant;
+    }
+
+    /** Called every minute by the scheduler: starts due campaigns and ends due A/B tests. */
     public function dispatchDue(): int
     {
         $due = Campaign::where('status', 'scheduled')->where('scheduled_at', '<=', now())->get();
         $due->each(fn (Campaign $c) => $this->queue($c));
+
+        Campaign::where('status', 'testing')->whereNull('winner_variant_id')->where('test_ends_at', '<=', now())
+            ->get()->each(fn (Campaign $c) => $this->pickWinner($c));
 
         return $due->count();
     }

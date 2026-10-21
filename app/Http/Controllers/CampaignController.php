@@ -32,19 +32,33 @@ class CampaignController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate(['type' => 'required|in:regular,plain', 'name' => 'nullable|string|max:190']);
+        $data = $request->validate(['type' => 'required|in:regular,plain,ab', 'name' => 'nullable|string|max:190']);
         $workspace = Workspace::current();
 
         $campaign = Campaign::create([
             'workspace_id' => $workspace->id,
             'type' => $data['type'],
-            'name' => $data['name'] ?: 'Untitled campaign '.now()->setTimezone($workspace->timezone)->format('M j, H:i'),
+            'name' => ($data['name'] ?? null) ?: 'Untitled campaign '.now()->setTimezone($workspace->timezone)->format('M j, H:i'),
             'from_name' => $workspace->company ?: $workspace->name,
             'from_email' => $workspace->contact_email,
             'reply_to' => $workspace->contact_email,
         ]);
 
+        if ($campaign->isAbTest()) {
+            $campaign->variants()->createMany([['label' => 'A'], ['label' => 'B']]);
+        }
+
         return redirect()->route('campaigns.recipients', $campaign);
+    }
+
+    /** Ends an A/B test early, with the chosen variant or the current leader. */
+    public function winner(Request $request, Campaign $campaign, CampaignService $service): RedirectResponse
+    {
+        abort_unless($campaign->isAbTest() && ! $campaign->winner_variant_id && in_array($campaign->status, ['testing', 'paused'], true), 409);
+        $variant = $request->filled('variant') ? $campaign->variants()->findOrFail($request->integer('variant')) : null;
+        $winner = $service->pickWinner($campaign, $variant);
+
+        return back()->with('success', "Variant {$winner->label} wins — sending it to the remaining recipients.");
     }
 
     /** Report overview for launched campaigns; drafts go back into the wizard. */
@@ -64,7 +78,8 @@ class CampaignController extends Controller
             ->selectRaw('subtype, count(*) as c')->groupBy('subtype')->pluck('c', 'subtype');
 
         return view('campaigns.show', [
-            'campaign' => $campaign,
+            'campaign' => $campaign->load('variants'),
+            'variantStats' => $campaign->isAbTest() ? $campaign->variantStats() : [],
             'stats' => $campaign->stats(),
             'topLinks' => $topLinks,
             'bounceTypes' => $bounceTypes,

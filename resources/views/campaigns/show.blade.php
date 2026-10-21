@@ -8,9 +8,57 @@
 
     @if ($campaign->isRunning() || $campaign->status === 'paused')
         <div class="card card-body mb-6" x-data x-init="@if ($campaign->isRunning()) setTimeout(() => location.reload(), 10000) @endif">
-            <div class="flex justify-between text-sm"><span class="font-medium">{{ $campaign->status === 'paused' ? 'Paused' : 'Sending in progress' }}</span><span class="tabular-nums text-gray-500">{{ number_format($stats['total'] - $stats['pending']) }} / {{ number_format($stats['total']) }} · {{ $stats['progress'] }}%</span></div>
+            <div class="flex justify-between text-sm"><span class="font-medium">{{ $campaign->status === 'paused' ? 'Paused' : ($campaign->status === 'testing' ? 'A/B test running — the rest waits for the winner' : 'Sending in progress') }}</span><span class="tabular-nums text-gray-500">{{ number_format($stats['total'] - $stats['pending']) }} / {{ number_format($stats['total']) }} · {{ $stats['progress'] }}%</span></div>
             <div class="mt-2 h-2.5 rounded-full bg-gray-100"><div class="h-2.5 rounded-full bg-brand-600" style="width: {{ $stats['progress'] }}%"></div></div>
             @if ($campaign->sending_window)<p class="help">Sending only within the configured sending window ({{ $campaign->workspace->timezone }}).</p>@endif
+        </div>
+    @endif
+
+    @if ($campaign->isAbTest() && $campaign->variants->isNotEmpty())
+        @php $metric = $campaign->abSetting('metric') === 'clicks' ? 'click_rate' : 'open_rate'; $best = collect($variantStats)->max($metric); @endphp
+        <div class="card mb-6">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">A/B test results</h2>
+                    <p class="text-xs text-gray-500">
+                        {{ $campaign->abSetting('test_percent') }}% test group · winner by {{ $campaign->abSetting('metric') }}
+                        @if ($campaign->winner)
+                            · <span class="font-medium text-emerald-700">Variant {{ $campaign->winner->label }} won</span>
+                        @elseif ($campaign->test_ends_at)
+                            · winner picked {{ $campaign->test_ends_at->isFuture() ? $campaign->test_ends_at->diffForHumans() : 'shortly' }}
+                        @endif
+                    </p>
+                </div>
+                @if (! $campaign->winner_variant_id && in_array($campaign->status, ['testing', 'paused']))
+                    <form method="POST" action="{{ route('campaigns.winner', $campaign) }}" onsubmit="return confirm('End the test now and send the current leader to everyone else?')">@csrf
+                        <button class="btn-secondary btn-sm">Pick winner now</button></form>
+                @endif
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead><tr><th>Variant</th><th>Changes</th><th>Sent</th><th>Open rate</th><th>Click rate</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach ($campaign->variants as $variant)
+                            @php $vs = $variantStats[$variant->id]; @endphp
+                            <tr>
+                                <td class="font-semibold">{{ $variant->label }}
+                                    @if ($campaign->winner_variant_id === $variant->id)<span class="badge-green ml-1">Winner</span>
+                                    @elseif (! $campaign->winner_variant_id && $vs['sent'] && $vs[$metric] === $best)<span class="badge-blue ml-1">Leading</span>@endif</td>
+                                <td class="max-w-sm truncate text-gray-600">{{ $variant->summary() }}</td>
+                                <td class="tabular-nums">{{ number_format($vs['sent']) }}</td>
+                                <td @class(['tabular-nums', 'font-semibold' => $metric === 'open_rate'])>{{ $vs['open_rate'] }}%</td>
+                                <td @class(['tabular-nums', 'font-semibold' => $metric === 'click_rate'])>{{ $vs['click_rate'] }}%</td>
+                                <td class="text-right">
+                                    @if (! $campaign->winner_variant_id && in_array($campaign->status, ['testing', 'paused']))
+                                        <form method="POST" action="{{ route('campaigns.winner', $campaign) }}" onsubmit="return confirm('Send variant {{ $variant->label }} to everyone else?')">@csrf
+                                            <input type="hidden" name="variant" value="{{ $variant->id }}"><button class="btn-ghost btn-sm">Choose</button></form>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     @endif
 

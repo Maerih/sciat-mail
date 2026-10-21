@@ -88,7 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::post('campaigns', [Controllers\CampaignController::class, 'store'])->name('campaigns.store');
         Route::prefix('campaigns/{campaign}')->name('campaigns.')->group(function () {
             Route::get('/', [Controllers\CampaignController::class, 'show'])->name('show');
-            foreach (['recipients', 'setup', 'content', 'schedule'] as $step) {
+            foreach (['recipients', 'setup', 'content', 'variants', 'schedule'] as $step) {
                 Route::get($step, [Controllers\CampaignWizardController::class, $step])->name($step);
                 Route::post($step, [Controllers\CampaignWizardController::class, 'save'.ucfirst($step)])->name($step.'.save');
             }
@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
             Route::get('report/{log}', [Controllers\CampaignReportController::class, 'log'])
                 ->whereIn('log', ['deliveries', 'opens', 'clicks', 'bounces', 'complaints', 'unsubscribes'])->name('log');
             Route::get('report-chart', [Controllers\CampaignReportController::class, 'chart'])->name('chart');
+            Route::post('winner', [Controllers\CampaignController::class, 'winner'])->name('winner');
             Route::post('pause', [Controllers\CampaignController::class, 'pause'])->name('pause');
             Route::post('resume', [Controllers\CampaignController::class, 'resume'])->name('resume');
             Route::post('cancel', [Controllers\CampaignController::class, 'cancel'])->name('cancel');

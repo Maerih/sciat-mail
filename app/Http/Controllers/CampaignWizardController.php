@@ -151,7 +151,7 @@ class CampaignWizardController extends Controller
 
         return $request->input('next') === 'stay'
             ? back()->with('success', 'Content saved.')
-            : redirect()->route('campaigns.schedule', $campaign);
+            : redirect()->route($campaign->isAbTest() ? 'campaigns.variants' : 'campaigns.schedule', $campaign);
     }
 
     public function useTemplate(Request $request, Campaign $campaign): RedirectResponse
@@ -180,6 +180,46 @@ class CampaignWizardController extends Controller
             : $builder->renderHtml($campaign, $delivery, $values, track: false);
 
         return response($body)->header('Content-Security-Policy', "script-src 'none'");
+    }
+
+    public function variants(Campaign $campaign): View|RedirectResponse
+    {
+        if ($redirect = $this->guard($campaign)) {
+            return $redirect;
+        }
+        abort_unless($campaign->isAbTest(), 404);
+
+        return $this->step($campaign, 'variants', ['variants' => $campaign->variants]);
+    }
+
+    public function saveVariants(Request $request, Campaign $campaign): RedirectResponse
+    {
+        $this->guard($campaign, abort: true);
+        abort_unless($campaign->isAbTest(), 404);
+        $data = $request->validate([
+            'variants' => 'required|array|min:2|max:5',
+            'variants.*.subject' => 'nullable|string|max:255',
+            'variants.*.from_name' => 'nullable|string|max:190',
+            'variants.*.preheader' => 'nullable|string|max:255',
+            'variants.*.html' => 'nullable|string',
+            'test_percent' => 'required|integer|min:5|max:100',
+            'metric' => 'required|in:opens,clicks',
+            'wait_hours' => 'required|integer|min:1|max:168',
+        ], ['variants.min' => 'An A/B test needs at least two variants.']);
+
+        $rows = array_values($data['variants']);
+        $signatures = array_map(fn ($v) => json_encode([$v['subject'] ?? '', $v['from_name'] ?? '', $v['preheader'] ?? '', $v['html'] ?? '']), $rows);
+        if (count(array_unique($signatures)) < count($signatures)) {
+            throw ValidationException::withMessages(['variants' => 'Each variant must differ from the others (subject, sender, preheader or content).']);
+        }
+
+        $campaign->variants()->delete();
+        foreach ($rows as $i => $row) {
+            $campaign->variants()->create(['label' => chr(65 + $i)] + array_map(fn ($v) => blank($v) ? null : $v, $row));
+        }
+        $campaign->forceFill(['ab_config' => collect($data)->only(['test_percent', 'metric', 'wait_hours'])->map(fn ($v) => is_numeric($v) ? (int) $v : $v)->all()])->save();
+
+        return redirect()->route('campaigns.schedule', $campaign);
     }
 
     public function schedule(Campaign $campaign): View|RedirectResponse
@@ -257,21 +297,26 @@ class CampaignWizardController extends Controller
         $subscriber = $campaign->audiences->where('exclude', false)->isNotEmpty()
             ? $campaign->recipientQuery()->with('list.fields')->first() : null;
 
-        $test = $campaign->replicate();
-        $test->subject = '[Test] '.$campaign->subject;
+        $versions = $campaign->isAbTest() && $campaign->variants->isNotEmpty()
+            ? $campaign->variants->map(fn ($v) => [$v->label, $campaign->withVariant($v)])
+            : collect([[null, $campaign]]);
         $sent = 0;
-        foreach ($emails as $email) {
-            $delivery = Delivery::create(['workspace_id' => $campaign->workspace_id, 'email' => $email, 'kind' => 'test',
-                'status' => 'pending', 'sending_server_id' => $server->id]);
-            try {
-                $message = $builder->forCampaign($test, $delivery, $subscriber, $server);
-                $id = $dispatcher->send($message, $server, $campaign->from_email, $email);
-                $delivery->forceFill(['status' => 'sent', 'sent_at' => now(), 'provider_message_id' => $id, 'attempts' => 1])->save();
-                $sent++;
-            } catch (SendFailed $e) {
-                $delivery->forceFill(['status' => 'failed', 'error' => $e->getMessage(), 'attempts' => 1])->save();
+        foreach ($versions as [$label, $version]) {
+            $test = $version->replicate();
+            $test->subject = '[Test'.($label ? ' '.$label : '').'] '.$version->subject;
+            foreach ($emails as $email) {
+                $delivery = Delivery::create(['workspace_id' => $campaign->workspace_id, 'email' => $email, 'kind' => 'test',
+                    'status' => 'pending', 'sending_server_id' => $server->id]);
+                try {
+                    $message = $builder->forCampaign($test, $delivery, $subscriber, $server);
+                    $id = $dispatcher->send($message, $server, $campaign->from_email, $email);
+                    $delivery->forceFill(['status' => 'sent', 'sent_at' => now(), 'provider_message_id' => $id, 'attempts' => 1])->save();
+                    $sent++;
+                } catch (SendFailed $e) {
+                    $delivery->forceFill(['status' => 'failed', 'error' => $e->getMessage(), 'attempts' => 1])->save();
 
-                return back()->with('error', 'Test send failed via '.$server->name.': '.$e->getMessage());
+                    return back()->with('error', 'Test send failed via '.$server->name.': '.$e->getMessage());
+                }
             }
         }
 
@@ -296,7 +341,12 @@ class CampaignWizardController extends Controller
 
     protected function step(Campaign $campaign, string $step, array $data = []): View
     {
-        return view('campaigns.wizard.'.$step, $data + ['campaign' => $campaign, 'steps' => self::STEPS, 'current' => $step]);
+        $steps = self::STEPS;
+        if ($campaign->isAbTest()) {
+            $steps = array_slice($steps, 0, 3, true) + ['variants' => 'Variants'] + array_slice($steps, 3, null, true);
+        }
+
+        return view('campaigns.wizard.'.$step, $data + ['campaign' => $campaign, 'steps' => $steps, 'current' => $step]);
     }
 
     protected function guard(Campaign $campaign, bool $abort = false): ?RedirectResponse

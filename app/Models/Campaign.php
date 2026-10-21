@@ -7,6 +7,7 @@ use App\Models\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -14,11 +15,14 @@ class Campaign extends Model
 {
     use BelongsToWorkspace, HasFactory, HasUid;
 
-    public const STATUSES = ['draft', 'scheduled', 'queued', 'sending', 'paused', 'done', 'cancelled', 'error', 'automation'];
+    public const STATUSES = ['draft', 'scheduled', 'queued', 'testing', 'sending', 'paused', 'done', 'cancelled', 'error', 'automation'];
+
+    /** @var array{test_percent: int, metric: string, wait_hours: int} */
+    public const AB_DEFAULTS = ['test_percent' => 20, 'metric' => 'opens', 'wait_hours' => 4];
 
     protected $fillable = [
         'workspace_id', 'automation_id', 'name', 'type', 'subject', 'preheader', 'from_name', 'from_email', 'reply_to', 'html', 'plain',
-        'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'server_weights', 'utm', 'scheduled_at', 'sending_window',
+        'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'server_weights', 'utm', 'scheduled_at', 'sending_window', 'ab_config',
     ];
 
     protected function casts(): array
@@ -31,6 +35,8 @@ class Campaign extends Model
             'server_weights' => 'array',
             'utm' => 'array',
             'sending_window' => 'array',
+            'ab_config' => 'array',
+            'test_ends_at' => 'datetime',
             'scheduled_at' => 'datetime',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
@@ -46,6 +52,70 @@ class Campaign extends Model
     public function isAutomationEmail(): bool
     {
         return $this->automation_id !== null;
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(CampaignVariant::class)->orderBy('label');
+    }
+
+    public function winner(): BelongsTo
+    {
+        return $this->belongsTo(CampaignVariant::class, 'winner_variant_id');
+    }
+
+    public function isAbTest(): bool
+    {
+        return $this->type === 'ab';
+    }
+
+    public function abSetting(string $key): int|string
+    {
+        return ($this->ab_config ?? [])[$key] ?? self::AB_DEFAULTS[$key];
+    }
+
+    /**
+     * Unsaved copy of the campaign with a variant's overrides applied, used to build the
+     * message for recipients assigned to that variant.
+     */
+    public function withVariant(?CampaignVariant $variant): self
+    {
+        if (! $variant) {
+            return $this;
+        }
+
+        $copy = clone $this;
+        foreach (['subject', 'from_name', 'preheader', 'html'] as $field) {
+            if (filled($variant->{$field})) {
+                $copy->{$field} = $variant->{$field};
+            }
+        }
+        if (filled($variant->html)) {
+            $copy->plain = null; // regenerate text from the variant's HTML
+        }
+
+        return $copy;
+    }
+
+    /** Opens/clicks per variant over the deliveries sent with it. @return array<int, array<string, int|float>> */
+    public function variantStats(): array
+    {
+        $rows = $this->deliveries()->toBase()->whereNotNull('variant_id')->whereNotNull('sent_at')
+            ->selectRaw('variant_id, count(*) as sent, sum(opened_at is not null) as opened, sum(clicked_at is not null) as clicked')
+            ->groupBy('variant_id')->get()->keyBy('variant_id');
+
+        return $this->variants->mapWithKeys(function (CampaignVariant $v) use ($rows) {
+            $r = $rows->get($v->id);
+            $sent = (int) ($r->sent ?? 0);
+
+            return [$v->id => [
+                'sent' => $sent,
+                'opened' => (int) ($r->opened ?? 0),
+                'clicked' => (int) ($r->clicked ?? 0),
+                'open_rate' => $sent ? round($r->opened / $sent * 100, 2) : 0.0,
+                'click_rate' => $sent ? round($r->clicked / $sent * 100, 2) : 0.0,
+            ]];
+        })->all();
     }
 
     public function audiences(): HasMany
@@ -70,7 +140,7 @@ class Campaign extends Model
 
     public function isRunning(): bool
     {
-        return in_array($this->status, ['queued', 'sending'], true);
+        return in_array($this->status, ['queued', 'testing', 'sending'], true);
     }
 
     public function isPlain(): bool
@@ -214,13 +284,16 @@ class Campaign extends Model
     public function duplicate(): self
     {
         $copy = $this->replicate(['uid', 'status', 'scheduled_at', 'recipients_count', 'sent_count', 'failed_count',
-            'skipped_count', 'last_error', 'started_at', 'finished_at']);
+            'skipped_count', 'last_error', 'started_at', 'finished_at', 'winner_variant_id', 'test_ends_at']);
         $copy->name = 'Copy of '.$this->name;
         $copy->status = 'draft';
         $copy->save();
 
         foreach ($this->audiences as $audience) {
             $copy->audiences()->create($audience->only(['mail_list_id', 'segment_id', 'exclude']));
+        }
+        foreach ($this->variants as $variant) {
+            $copy->variants()->create($variant->only(['label', 'subject', 'from_name', 'preheader', 'html']));
         }
 
         return $copy;

@@ -6,7 +6,7 @@
         <div class="grid gap-6 xl:grid-cols-2">
             <div class="card flex flex-col">
                 <div class="card-header">
-                    <h2 class="card-title">{{ $campaign->isPlain() ? 'Plain text message' : 'HTML code' }}</h2>
+                    <h2 class="card-title">{{ $campaign->isPlain() ? 'Plain text message' : ($campaign->isAbTest() ? 'Default HTML (variants can override it)' : 'HTML code') }}</h2>
                     <div class="flex gap-2">
                         @unless ($campaign->isPlain())
                             <button type="button" class="btn-secondary btn-sm" @click="gallery = true"><x-icon name="template" class="size-4" /> Templates</button>

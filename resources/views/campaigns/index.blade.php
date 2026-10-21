@@ -29,7 +29,7 @@
                             <tr>
                                 <td class="max-w-md">
                                     <a href="{{ route('campaigns.show', $campaign) }}" class="block truncate font-medium text-gray-900 hover:text-brand-600">{{ $campaign->name }}</a>
-                                    <span class="block truncate text-xs text-gray-500">{{ $campaign->subject ?: 'No subject yet' }} · {{ $campaign->isPlain() ? 'Plain text' : 'HTML' }}</span>
+                                    <span class="block truncate text-xs text-gray-500">{{ $campaign->subject ?: 'No subject yet' }} · {{ $campaign->isAbTest() ? 'A/B test' : ($campaign->isPlain() ? 'Plain text' : 'HTML') }}</span>
                                 </td>
                                 <td><x-status-badge :status="$campaign->status" /></td>
                                 <td class="tabular-nums">{{ $campaign->recipients_count ? number_format($campaign->recipients_count) : '—' }}</td>

@@ -31,9 +31,10 @@ class SendCampaignBatch implements ShouldQueue
     public function handle(ServerPicker $picker, MessageBuilder $builder, Dispatcher $dispatcher): void
     {
         $campaign = Campaign::with('workspace')->find($this->campaignId);
-        if (! $campaign || $campaign->status !== 'sending') {
+        if (! $campaign || ! in_array($campaign->status, ['sending', 'testing'], true)) {
             return; // paused or cancelled: pending rows are picked up again on resume
         }
+        $variants = $campaign->isAbTest() ? $campaign->variants()->get()->keyBy('id') : collect();
 
         if (! $campaign->inSendingWindow()) {
             $this->release($campaign->secondsUntilWindowOpens());
@@ -52,7 +53,7 @@ class SendCampaignBatch implements ShouldQueue
             ->whereIn('id', $this->deliveryIds)->where('status', 'pending')->orderBy('id')->get();
 
         foreach ($deliveries as $index => $delivery) {
-            if ($index % 25 === 0 && $index > 0 && Campaign::whereKey($campaign->id)->value('status') !== 'sending') {
+            if ($index % 25 === 0 && $index > 0 && ! in_array(Campaign::whereKey($campaign->id)->value('status'), ['sending', 'testing'], true)) {
                 return;
             }
 
@@ -73,7 +74,8 @@ class SendCampaignBatch implements ShouldQueue
             $delivery->forceFill(['sending_server_id' => $server->id, 'attempts' => $delivery->attempts + 1]);
 
             try {
-                $message = $builder->forCampaign($campaign, $delivery, $delivery->subscriber, $server);
+                $version = $campaign->withVariant($variants->get($delivery->variant_id));
+                $message = $builder->forCampaign($version, $delivery, $delivery->subscriber, $server);
                 $messageId = $dispatcher->send($message, $server, $campaign->from_email, $delivery->email);
                 $delivery->forceFill(['status' => 'sent', 'sent_at' => now(), 'provider_message_id' => $messageId, 'error' => null])->save();
             } catch (SendFailed $e) {

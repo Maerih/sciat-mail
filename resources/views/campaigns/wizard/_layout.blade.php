@@ -1,5 +1,5 @@
 {{-- Shared wizard chrome: header + step indicator --}}
-<x-page-header :title="$campaign->name" :subtitle="($campaign->isPlain() ? 'Plain text' : 'HTML').' campaign · '.ucfirst($campaign->status)" :back="route('campaigns.index')">
+<x-page-header :title="$campaign->name" :subtitle="($campaign->isAbTest() ? 'A/B test' : ($campaign->isPlain() ? 'Plain text' : 'HTML')).' campaign · '.ucfirst($campaign->status)" :back="route('campaigns.index')">
     <x-slot:actions>
         <a href="{{ route('campaigns.preview', $campaign) }}" target="_blank" class="btn-secondary"><x-icon name="eye" /> Preview</a>
     </x-slot:actions>

@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class Delivery extends Model
 {
     protected $fillable = [
-        'uid', 'campaign_id', 'subscriber_id', 'automation_run_id', 'workspace_id', 'email', 'kind', 'status', 'sending_server_id',
+        'uid', 'campaign_id', 'subscriber_id', 'automation_run_id', 'variant_id', 'workspace_id', 'email', 'kind', 'status', 'sending_server_id',
     ];
 
     protected function casts(): array
@@ -41,6 +41,11 @@ class Delivery extends Model
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    public function variant(): BelongsTo
+    {
+        return $this->belongsTo(CampaignVariant::class);
     }
 
     public function sendingServer(): BelongsTo

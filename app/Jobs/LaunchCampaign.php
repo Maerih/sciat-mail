@@ -36,6 +36,7 @@ class LaunchCampaign implements ShouldBeUnique, ShouldQueue
         }
 
         $campaign->forceFill(['status' => 'sending', 'started_at' => $campaign->started_at ?? now()])->save();
+        $firstLaunch = ! $campaign->deliveries()->exists();
 
         // Snapshot only once: a resumed campaign keeps its original ledger
         if (! $campaign->deliveries()->exists()) {
@@ -60,19 +61,62 @@ class LaunchCampaign implements ShouldBeUnique, ShouldQueue
             $campaign->forceFill(['recipients_count' => $campaign->deliveries()->count()])->save();
         }
 
+        if ($campaign->isAbTest() && ! $campaign->winner_variant_id) {
+            if ($firstLaunch) {
+                static::assignTestSample($campaign);
+            }
+            if ($campaign->deliveries()->where('status', 'pending')->whereNull('variant_id')->exists()) {
+                // Test phase: only the sample goes out until a winner is chosen
+                $campaign->forceFill(['status' => 'testing', 'test_ends_at' => $campaign->test_ends_at
+                    ?? now()->addHours((int) $campaign->abSetting('wait_hours'))])->save();
+                static::dispatchBatches($campaign, onlyAssigned: true);
+                PickAbWinner::dispatch($campaign->id)->delay($campaign->test_ends_at);
+
+                return;
+            }
+        }
+
         static::dispatchBatches($campaign);
     }
 
-    public static function dispatchBatches(Campaign $campaign, int $delay = 0): void
+    /**
+     * Randomly picks test_percent of the recipients and spreads them evenly over the variants.
+     * When the sample would cover everyone, every recipient is split and no winner phase follows.
+     */
+    public static function assignTestSample(Campaign $campaign): void
+    {
+        $variants = $campaign->variants()->pluck('id')->all();
+        $total = $campaign->deliveries()->count();
+        if (! $variants || ! $total) {
+            return;
+        }
+
+        $sample = (int) max(count($variants), ceil($total * (int) $campaign->abSetting('test_percent') / 100));
+        $ids = $campaign->deliveries()->inRandomOrder()->limit(min($sample, $total))->pluck('id');
+
+        foreach ($ids->chunk(1000) as $chunk) {
+            foreach ($chunk->values() as $i => $id) {
+                $groups[$variants[$i % count($variants)]][] = $id;
+            }
+            foreach ($groups ?? [] as $variantId => $deliveryIds) {
+                Delivery::whereIn('id', $deliveryIds)->update(['variant_id' => $variantId]);
+            }
+            $groups = [];
+        }
+    }
+
+    public static function dispatchBatches(Campaign $campaign, int $delay = 0, bool $onlyAssigned = false): void
     {
         $dispatched = false;
-        $campaign->deliveries()->where('status', 'pending')->select('id')->orderBy('id')
+        $campaign->deliveries()->where('status', 'pending')
+            ->when($onlyAssigned, fn ($q) => $q->whereNotNull('variant_id'))
+            ->select('id')->orderBy('id')
             ->chunkById(self::BATCH_SIZE, function ($rows) use ($campaign, $delay, &$dispatched) {
                 SendCampaignBatch::dispatch($campaign->id, $rows->pluck('id')->all())->delay($delay);
                 $dispatched = true;
             });
 
-        if (! $dispatched) {
+        if (! $dispatched && ! $onlyAssigned) {
             FinalizeCampaign::dispatch($campaign->id);
         }
     }
