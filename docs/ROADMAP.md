@@ -10,7 +10,7 @@ form, template and suppression entry belongs to one workspace. Team members swit
 workspace from the sidebar. Sending servers can be shared (workspace = null) or
 dedicated to a workspace.
 
-## Phase 1 (this build)
+## Phase 1 — done
 
 ### Audience
 - Lists: name, sender identity (from name/email, reply-to), postal address (CAN-SPAM),
@@ -59,12 +59,15 @@ dedicated to a workspace.
 - Embedded HTML form snippet + hosted subscribe page per list, honeypot + rate limit,
   optional consent checkbox, redirect URL, double opt-in confirmation flow.
 
-## Phase 2 (next)
-Automations (visual flow: subscribe/date/open/click/webhook triggers, delays, branches),
-drag-and-drop email builder, A/B testing (subject/from/content, auto winner), popup
-forms, email verification services, IMAP bounce/FBL handlers, IP warmup strategies,
-spintax, RSS campaigns.
+## Phase 2 — done
+- Automations: triggers (welcome, goodbye, birthday, date field, tag added/removed, field
+  change, weekly/monthly, new RSS post); steps send / wait / yes-no condition / action;
+  flow builder, per-step stats, contacts view, enrol existing contacts.
+- A/B testing: 2–5 variants, test group, auto winner by opens or clicks, manual pick.
+- Spintax, IP warmup strategies, popup forms (script for client sites), email
+  verification (Emailable, Kickbox, ZeroBounce, built-in), GrapesJS drag-and-drop
+  builder, IMAP bounce/complaint handlers, RSS-to-email.
 
-## Phase 3
+## Phase 3 (next)
 REST API + outbound webhooks, client portal logins / roles, plans, quotas and billing,
 white-label branding, AI assistant (subject lines, copy), GeoIP + device reports.
