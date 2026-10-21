@@ -25,6 +25,7 @@
                 <div class="card-header">
                     <h2 class="card-title">HTML</h2>
                     <div class="flex gap-2">
+                        <a href="{{ route('campaigns.builder', $campaign) }}" class="btn-primary btn-sm" onclick="return confirm('Unsaved changes on this page will be lost. Open the builder?')">Drag & drop builder</a>
                         <button type="button" class="btn-secondary btn-sm" @click="gallery = true"><x-icon name="template" class="size-4" /> Templates</button>
                         <div x-data="{ open: false }" class="relative">
                             <button type="button" class="btn-secondary btn-sm" @click="open = !open">Merge tags <x-icon name="chevron-down" class="size-3.5" /></button>

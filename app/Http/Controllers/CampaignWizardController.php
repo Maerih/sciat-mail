@@ -148,6 +148,9 @@ class CampaignWizardController extends Controller
             'html' => $campaign->isPlain() ? 'nullable' : 'required|string',
             'plain' => $campaign->isPlain() ? 'required|string' : 'nullable|string',
         ]);
+        if (($data['html'] ?? null) !== $campaign->html) {
+            $campaign->builder_json = null; // hand-edited HTML replaces the drag & drop design
+        }
         $campaign->fill($data)->save();
 
         return $request->input('next') === 'stay'
@@ -159,7 +162,7 @@ class CampaignWizardController extends Controller
     {
         $this->guard($campaign, abort: true);
         $template = Template::availableTo(Workspace::current())->where('uid', $request->input('template'))->firstOrFail();
-        $campaign->forceFill(['html' => $template->html])->save();
+        $campaign->forceFill(['html' => $template->html, 'builder_json' => $template->builder_json])->save();
 
         return redirect()->route('campaigns.content', $campaign)->with('success', "Template “{$template->name}” applied.");
     }

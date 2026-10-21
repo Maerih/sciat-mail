@@ -9,6 +9,7 @@
                     <h2 class="card-title">{{ $campaign->isPlain() ? 'Plain text message' : ($campaign->isAbTest() ? 'Default HTML (variants can override it)' : 'HTML code') }}</h2>
                     <div class="flex gap-2">
                         @unless ($campaign->isPlain())
+                            <a href="{{ route('campaigns.builder', $campaign) }}" class="btn-primary btn-sm">Drag & drop builder</a>
                             <button type="button" class="btn-secondary btn-sm" @click="gallery = true"><x-icon name="template" class="size-4" /> Templates</button>
                         @endunless
                         <div x-data="{ open: false }" class="relative">

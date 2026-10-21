@@ -10,7 +10,7 @@ class Template extends Model
 {
     use HasUid;
 
-    protected $fillable = ['workspace_id', 'name', 'category', 'html'];
+    protected $fillable = ['workspace_id', 'name', 'category', 'html', 'builder_json'];
 
     public function resolveRouteBinding($value, $field = null)
     {

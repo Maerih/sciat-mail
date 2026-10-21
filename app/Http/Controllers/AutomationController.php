@@ -259,7 +259,7 @@ class AutomationController extends Controller
 
         if ($request->filled('template')) {
             $template = Template::availableTo(Workspace::current())->where('uid', $request->template)->firstOrFail();
-            $campaign->forceFill(['html' => $template->html])->save();
+            $campaign->forceFill(['html' => $template->html, 'builder_json' => $template->builder_json])->save();
 
             return back()->with('success', "Template “{$template->name}” applied.");
         }
@@ -278,6 +278,9 @@ class AutomationController extends Controller
             throw ValidationException::withMessages(['html' => 'Add HTML content or a plain-text version.']);
         }
 
+        if ($data['html'] !== $campaign->html) {
+            $campaign->builder_json = null;
+        }
         $campaign->fill($data + [
             'type' => blank($data['html']) ? 'plain' : 'regular',
             'track_open' => $request->boolean('track_open'),

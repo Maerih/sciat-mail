@@ -18,7 +18,8 @@
                         @if ($template->isSystem())
                             <a href="{{ route('templates.create', ['from' => $template->uid]) }}" class="btn-secondary btn-sm">Customise</a>
                         @else
-                            <a href="{{ route('templates.edit', $template) }}" class="btn-secondary btn-sm">Edit</a>
+                            <a href="{{ route('templates.builder', $template) }}" class="btn-secondary btn-sm">Design</a>
+                            <a href="{{ route('templates.edit', $template) }}" class="btn-ghost btn-sm">HTML</a>
                             <x-confirm-delete :action="route('templates.destroy', $template)" label="" class="btn-ghost btn-sm text-red-600"><x-icon name="trash" class="size-4" /></x-confirm-delete>
                         @endif
                     </span>

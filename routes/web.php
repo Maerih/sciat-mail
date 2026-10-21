@@ -128,6 +128,13 @@ Route::middleware('auth')->group(function () {
             Route::put('steps/{step}/email', [Controllers\AutomationController::class, 'updateEmail'])->name('email.update');
         });
 
+        // Drag-and-drop builder
+        Route::get('templates/{template}/builder', [Controllers\BuilderController::class, 'template'])->name('templates.builder');
+        Route::put('templates/{template}/builder', [Controllers\BuilderController::class, 'saveTemplate'])->name('templates.builder.save');
+        Route::get('campaigns/{campaign}/builder', [Controllers\BuilderController::class, 'campaign'])->name('campaigns.builder');
+        Route::put('campaigns/{campaign}/builder', [Controllers\BuilderController::class, 'saveCampaign'])->name('campaigns.builder.save');
+        Route::post('builder/upload', [Controllers\BuilderController::class, 'upload'])->name('builder.upload');
+
         Route::resource('templates', Controllers\TemplateController::class)->except(['show']);
         Route::get('templates/{template}/preview', [Controllers\TemplateController::class, 'preview'])->name('templates.preview');
 

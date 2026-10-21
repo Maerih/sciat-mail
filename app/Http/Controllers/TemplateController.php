@@ -35,7 +35,13 @@ class TemplateController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $template = Template::create($this->validated($request) + ['workspace_id' => Workspace::current()->id]);
+        $base = $request->filled('from') ? Template::availableTo(Workspace::current())->where('uid', $request->from)->first() : null;
+        $data = $this->validated($request);
+        // keep the source design when the copied HTML was not changed
+        $template = Template::create($data + [
+            'workspace_id' => Workspace::current()->id,
+            'builder_json' => $base && $base->html === $data['html'] ? $base->builder_json : null,
+        ]);
 
         return redirect()->route('templates.edit', $template)->with('success', 'Template saved.');
     }
@@ -52,7 +58,11 @@ class TemplateController extends Controller
     public function update(Request $request, Template $template): RedirectResponse
     {
         abort_if($template->isSystem(), 403);
-        $template->update($this->validated($request));
+        $data = $this->validated($request);
+        if ($data['html'] !== $template->html) {
+            $data['builder_json'] = null; // hand-edited HTML replaces the drag & drop design
+        }
+        $template->update($data);
 
         return back()->with('success', 'Template saved.');
     }
