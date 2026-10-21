@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Sending\Throttle;
 use App\Sending\TrackingUrls;
 use App\Sending\TransportFactory;
+use App\Services\Ai\AiAssistant;
 use App\Services\Bounces\ImapMailbox;
 use App\Services\Bounces\Mailbox;
 use App\Services\Dns\DnsResolver;
@@ -25,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TransportFactory::class);
         $this->app->singleton(Throttle::class);
         $this->app->singleton(TrackingUrls::class);
+        $this->app->bind(AiAssistant::class, fn () => new AiAssistant);
     }
 
     public function boot(): void

@@ -47,6 +47,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('admin')->group(function () {
         Route::get('/workspaces', [Controllers\WorkspaceController::class, 'index'])->name('workspaces.index');
+        Route::get('/platform/ai', [Controllers\AiController::class, 'settings'])->name('platform.ai');
+        Route::put('/platform/ai', [Controllers\AiController::class, 'saveSettings'])->name('platform.ai.update');
         Route::get('/platform', [Controllers\PlatformSettingsController::class, 'edit'])->name('platform.edit');
         Route::put('/platform', [Controllers\PlatformSettingsController::class, 'update'])->name('platform.update');
         Route::resource('team', Controllers\TeamController::class)->only(['index', 'store', 'destroy'])
@@ -58,6 +60,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/workspace/settings', [Controllers\WorkspaceController::class, 'edit'])->name('workspaces.edit');
         Route::put('/workspace/settings', [Controllers\WorkspaceController::class, 'update'])->name('workspaces.update');
         Route::delete('/workspace', [Controllers\WorkspaceController::class, 'destroy'])->middleware('admin')->name('workspaces.destroy');
+
+        // AI assistant
+        Route::middleware('throttle:30,1')->prefix('ai')->name('ai.')->group(function () {
+            Route::post('subjects', [Controllers\AiController::class, 'subjects'])->name('subjects');
+            Route::post('rewrite', [Controllers\AiController::class, 'rewrite'])->name('rewrite');
+            Route::post('draft', [Controllers\AiController::class, 'draft'])->name('draft');
+        });
 
         // API access & webhooks
         Route::get('/developers', [Controllers\ApiSettingsController::class, 'index'])->name('api.settings');

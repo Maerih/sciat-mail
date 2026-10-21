@@ -8,6 +8,11 @@
                 <div class="card-header">
                     <h2 class="card-title">{{ $campaign->isPlain() ? 'Plain text message' : ($campaign->isAbTest() ? 'Default HTML (variants can override it)' : 'HTML code') }}</h2>
                     <div class="flex gap-2">
+                        @if ($campaign->isPlain())
+                            <x-ai.rewrite target="textarea[name=plain]" />
+                        @else
+                            <x-ai.draft on-draft="(d) => { const el = document.querySelector('textarea[name=html]'); el.value = d.html; el.dispatchEvent(new Event('input', { bubbles: true })); }" />
+                        @endif
                         @unless ($campaign->isPlain())
                             <a href="{{ route('campaigns.builder', $campaign) }}" class="btn-primary btn-sm">Drag & drop builder</a>
                             <button type="button" class="btn-secondary btn-sm" @click="gallery = true"><x-icon name="template" class="size-4" /> Templates</button>

@@ -10,6 +10,7 @@
         <div class="card card-body space-y-4">
             <h2 class="card-title">Basic information</h2>
             <x-field name="name" label="Campaign name" :value="$campaign->name" required help="Internal only — subscribers don't see it." />
+            <div class="-mb-3 flex justify-end"><x-ai.subjects subject="#f-subject" preheader="#f-preheader" :content="$campaign->html ?: $campaign->plain" /></div>
             <x-field name="subject" label="Subject line" :value="$campaign->subject" required maxlength="255" help="Personalise with merge tags, e.g. &#123;&#123; SUBSCRIBER_FIRST_NAME | there &#125;&#125;" />
             <x-field name="preheader" label="Preheader" :value="$campaign->preheader" maxlength="255" help="Preview text shown after the subject in most inboxes." />
             <div class="grid gap-4 sm:grid-cols-2">

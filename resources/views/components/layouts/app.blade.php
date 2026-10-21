@@ -33,7 +33,8 @@
     if (auth()->user()->isAdmin()) {
         $nav[] = ['All clients', 'workspaces.index', 'building', 'workspaces.index'];
         $nav[] = ['Team', 'team.index', 'team', 'team.*'];
-        $nav[] = ['Platform branding', 'platform.edit', 'template', 'platform.*'];
+        $nav[] = ['Platform branding', 'platform.edit', 'template', 'platform.edit'];
+        $nav[] = ['AI assistant', 'platform.ai', 'bolt', 'platform.ai'];
     }
 @endphp
 

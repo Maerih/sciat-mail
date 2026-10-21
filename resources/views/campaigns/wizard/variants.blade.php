@@ -5,7 +5,7 @@
         $rows = $rows ?: [['subject' => '', 'from_name' => '', 'preheader' => '', 'html' => ''], ['subject' => '', 'from_name' => '', 'preheader' => '', 'html' => '']];
     @endphp
     <form method="POST" action="{{ route('campaigns.variants.save', $campaign) }}" class="max-w-4xl space-y-6"
-          x-data="{ variants: @js($rows), letters: 'ABCDE' }">
+          x-data="{ variants: @js($rows), letters: 'ABCDE', aiLoading: false, aiError: '' }">
         @csrf
         <div class="card card-body space-y-2 text-sm text-gray-600">
             <h2 class="card-title">How the test works</h2>
@@ -30,7 +30,17 @@
                 </details>
             </div>
         </template>
-        <button type="button" class="btn-secondary btn-sm" x-show="variants.length < 5" @click="variants.push({ subject: '', from_name: '', preheader: '', html: '' })"><x-icon name="plus" class="size-4" /> Add variant</button>
+        <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn-secondary btn-sm" x-show="variants.length < 5" @click="variants.push({ subject: '', from_name: '', preheader: '', html: '' })"><x-icon name="plus" class="size-4" /> Add variant</button>
+            @if (\App\Services\Ai\AiAssistant::isConfigured())
+                <button type="button" class="btn-ghost btn-sm text-brand-700" :disabled="aiLoading" @click="aiLoading = true; aiError = ''; aiPost(@js(route('ai.subjects')), { subject: @js($campaign->subject), content: @js((string) $campaign->html), count: variants.length })
+                    .then(d => d.suggestions.forEach((s, i) => { if (variants[i]) { variants[i].subject = s.subject; variants[i].preheader = s.preheader } }))
+                    .catch(e => aiError = e.message).finally(() => aiLoading = false)">
+                    <x-icon name="bolt" class="size-4" /> <span x-text="aiLoading ? 'Writing…' : 'Fill subjects with AI (different angles)'"></span>
+                </button>
+                <span class="error" x-show="aiError" x-text="aiError"></span>
+            @endif
+        </div>
 
         <div class="card card-body grid gap-4 sm:grid-cols-3">
             <h2 class="card-title sm:col-span-3">Test settings</h2>

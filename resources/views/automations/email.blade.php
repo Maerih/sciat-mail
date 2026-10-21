@@ -9,7 +9,10 @@
         @csrf @method('PUT')
         <div class="card card-body mb-6 grid gap-4 sm:grid-cols-2">
             <x-field name="name" label="Internal name" :value="$campaign->name" required />
-            <x-field name="subject" label="Subject line" :value="$campaign->subject" required />
+            <div>
+                <div class="-mb-1 flex justify-end"><x-ai.subjects subject="#f-subject" preheader="#f-preheader" :content="$campaign->html ?: $campaign->plain" /></div>
+                <x-field name="subject" label="Subject line" :value="$campaign->subject" required />
+            </div>
             <x-field name="preheader" label="Preheader" :value="$campaign->preheader" class="sm:col-span-2" />
             <x-field name="from_name" label="From name" :value="$campaign->from_name" required />
             <x-field name="from_email" type="email" label="From email" :value="$campaign->from_email" required />
@@ -25,6 +28,7 @@
                 <div class="card-header">
                     <h2 class="card-title">HTML</h2>
                     <div class="flex gap-2">
+                        <x-ai.draft on-draft="(d) => { const el = document.querySelector('textarea[name=html]'); el.value = d.html; el.dispatchEvent(new Event('input', { bubbles: true })); const s = document.getElementById('f-subject'); if (s && !s.value) { s.value = d.subject; } const p = document.getElementById('f-preheader'); if (p && !p.value) { p.value = d.preheader; } }" />
                         <a href="{{ route('campaigns.builder', $campaign) }}" class="btn-primary btn-sm" onclick="return confirm('Unsaved changes on this page will be lost. Open the builder?')">Drag & drop builder</a>
                         <button type="button" class="btn-secondary btn-sm" @click="gallery = true"><x-icon name="template" class="size-4" /> Templates</button>
                         <div x-data="{ open: false }" class="relative">
