@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Jobs\TriggerAutomations;
 use App\Models\Concerns\HasUid;
+use App\Services\Webhooks;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,12 +41,14 @@ class Subscriber extends Model
         static::created(function (Subscriber $s) {
             if ($s->status === 'subscribed' && $s->source !== 'import') {
                 static::fireAutomation($s, 'subscribed');
+                Webhooks::dispatch($s->list->workspace_id, 'subscriber.subscribed', $s->webhookPayload());
             }
         });
 
         static::updated(function (Subscriber $s) {
             if ($s->wasChanged('status') && in_array($s->status, ['subscribed', 'unsubscribed'], true)) {
                 static::fireAutomation($s, $s->status);
+                Webhooks::dispatch($s->list->workspace_id, 'subscriber.'.$s->status, $s->webhookPayload());
             }
             if ($s->wasChanged('tags')) {
                 $before = array_map('strtolower', json_decode((string) $s->getRawOriginal('tags'), true) ?? []);
@@ -66,6 +69,19 @@ class Subscriber extends Model
                 }
             }
         });
+    }
+
+    /** @return array<string, mixed> */
+    public function webhookPayload(): array
+    {
+        return [
+            'uid' => $this->uid,
+            'email' => $this->email,
+            'status' => $this->status,
+            'list' => ['uid' => $this->list->uid, 'name' => $this->list->name],
+            'fields' => $this->data ?? (object) [],
+            'tags' => $this->tags ?? [],
+        ];
     }
 
     /** Queues automation triggers only when the list has an active automation listening for them. */

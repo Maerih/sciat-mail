@@ -27,6 +27,7 @@
         ['Blacklist', 'sending.blacklist.index', 'ban', 'sending.blacklist.*'],
         'Settings',
         ['Client settings', 'workspaces.edit', 'cog', 'workspaces.edit'],
+        ['API & webhooks', 'api.settings', 'link', 'api.*'],
     ];
     if (auth()->user()->isAdmin()) {
         $nav[] = ['All clients', 'workspaces.index', 'building', 'workspaces.index'];

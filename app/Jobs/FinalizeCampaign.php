@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Campaign;
+use App\Services\Webhooks;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -31,10 +32,18 @@ class FinalizeCampaign implements ShouldQueue
             'skipped_count' => (int) $counts->skipped,
         ]);
 
-        if ((int) $counts->pending === 0) {
+        $finished = (int) $counts->pending === 0;
+        if ($finished) {
             $campaign->forceFill(['status' => 'done', 'finished_at' => now()]);
         }
 
         $campaign->save();
+
+        if ($finished) {
+            Webhooks::dispatch($campaign->workspace_id, 'campaign.finished', [
+                'uid' => $campaign->uid, 'name' => $campaign->name, 'sent' => $campaign->sent_count,
+                'failed' => $campaign->failed_count, 'skipped' => $campaign->skipped_count, 'finished_at' => $campaign->finished_at->toIso8601String(),
+            ]);
+        }
     }
 }

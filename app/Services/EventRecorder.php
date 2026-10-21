@@ -14,8 +14,24 @@ class EventRecorder
 {
     public function __construct(protected SubscriptionService $subscriptions) {}
 
+    /** @return array<string, mixed> */
+    protected function payload(Delivery $delivery, array $extra = []): array
+    {
+        $campaign = $delivery->campaign;
+
+        return [
+            'delivery_uid' => $delivery->uid,
+            'email' => $delivery->email,
+            'campaign' => $campaign ? ['uid' => $campaign->uid, 'name' => $campaign->name, 'automation' => (bool) $campaign->automation_id] : null,
+            'subscriber_uid' => $delivery->subscriber?->uid,
+        ] + $extra;
+    }
+
     public function open(Delivery $delivery, ?string $ip, ?string $agent): void
     {
+        if ($delivery->opened_at === null) {
+            Webhooks::dispatch($delivery->workspace_id, 'email.opened', $this->payload($delivery));
+        }
         $delivery->logEvent('open', ['ip' => $ip, 'user_agent' => mb_substr((string) $agent, 0, 500)]);
         $now = now();
         Delivery::whereKey($delivery->id)->update([
@@ -28,6 +44,7 @@ class EventRecorder
     public function click(Delivery $delivery, string $url, ?string $ip, ?string $agent): void
     {
         $delivery->logEvent('click', ['url' => mb_substr($url, 0, 2000), 'ip' => $ip, 'user_agent' => mb_substr((string) $agent, 0, 500)]);
+        Webhooks::dispatch($delivery->workspace_id, 'email.clicked', $this->payload($delivery, ['url' => $url]));
         $now = now();
         // a click implies an open even when images were blocked
         Delivery::whereKey($delivery->id)->update([
@@ -52,6 +69,7 @@ class EventRecorder
     public function bounce(Delivery $delivery, string $type, ?string $detail = null): void
     {
         $delivery->logEvent('bounce', ['subtype' => $type, 'detail' => $detail]);
+        Webhooks::dispatch($delivery->workspace_id, 'email.bounced', $this->payload($delivery, ['bounce_type' => $type, 'detail' => $detail]));
 
         if ($type === 'hard') {
             $delivery->forceFill(['status' => 'bounced'])->save();
@@ -62,6 +80,7 @@ class EventRecorder
     public function complaint(Delivery $delivery, ?string $detail = null): void
     {
         $delivery->logEvent('complaint', ['detail' => $detail]);
+        Webhooks::dispatch($delivery->workspace_id, 'email.complained', $this->payload($delivery));
         $delivery->forceFill(['status' => 'complained'])->save();
         if ($delivery->subscriber) {
             $delivery->subscriber->unsubscribe();

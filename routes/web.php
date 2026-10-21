@@ -57,6 +57,16 @@ Route::middleware('auth')->group(function () {
         Route::put('/workspace/settings', [Controllers\WorkspaceController::class, 'update'])->name('workspaces.update');
         Route::delete('/workspace', [Controllers\WorkspaceController::class, 'destroy'])->middleware('admin')->name('workspaces.destroy');
 
+        // API access & webhooks
+        Route::get('/developers', [Controllers\ApiSettingsController::class, 'index'])->name('api.settings');
+        Route::get('/developers/docs', [Controllers\ApiSettingsController::class, 'docs'])->name('api.docs');
+        Route::post('/developers/tokens', [Controllers\ApiSettingsController::class, 'storeToken'])->name('api.tokens.store');
+        Route::delete('/developers/tokens/{token}', [Controllers\ApiSettingsController::class, 'destroyToken'])->name('api.tokens.destroy');
+        Route::post('/developers/webhooks', [Controllers\ApiSettingsController::class, 'storeWebhook'])->name('api.webhooks.store');
+        Route::post('/developers/webhooks/{webhook}/toggle', [Controllers\ApiSettingsController::class, 'toggleWebhook'])->name('api.webhooks.toggle');
+        Route::post('/developers/webhooks/{webhook}/test', [Controllers\ApiSettingsController::class, 'testWebhook'])->name('api.webhooks.test');
+        Route::delete('/developers/webhooks/{webhook}', [Controllers\ApiSettingsController::class, 'destroyWebhook'])->name('api.webhooks.destroy');
+
         // Lists & subscribers
         Route::resource('lists', Controllers\ListController::class)->except(['show']);
         Route::prefix('lists/{list}')->name('lists.')->scopeBindings()->group(function () {

@@ -22,6 +22,7 @@ class Automation extends Model
      */
     public const TRIGGERS = [
         'subscribed' => ['label' => 'Welcome new subscribers', 'description' => 'Starts when someone joins the list (after confirming, with double opt-in).', 'enrolls' => 'event', 'config' => []],
+        'api' => ['label' => 'Triggered by API', 'description' => 'Your app starts the journey for a contact via POST /api/v1/automations/{uid}/enroll (e.g. after a purchase).', 'enrolls' => 'event', 'config' => []],
         'unsubscribed' => ['label' => 'Say goodbye', 'description' => 'Starts when someone unsubscribes. Only transactional-style follow-ups are allowed.', 'enrolls' => 'event', 'config' => []],
         'birthday' => ['label' => 'Birthday / anniversary', 'description' => 'Every year on the month and day stored in a date field.', 'enrolls' => 'date', 'config' => ['field', 'time']],
         'date_field' => ['label' => 'Specific date', 'description' => 'Once, a number of days before or after a date field (appointments, renewals, trials).', 'enrolls' => 'date', 'config' => ['field', 'offset_days', 'time']],
