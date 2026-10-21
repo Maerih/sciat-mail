@@ -26,6 +26,6 @@ class DatabaseSeeder extends Seeder
             $this->command?->warn('ADMIN_EMAIL / ADMIN_PASSWORD not set in .env — no admin user created.');
         }
 
-        $this->call(TemplateSeeder::class);
+        $this->call([TemplateSeeder::class, WarmupStrategySeeder::class]);
     }
 }

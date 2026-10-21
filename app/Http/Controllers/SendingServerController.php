@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SendingServer;
+use App\Models\WarmupStrategy;
 use App\Models\Workspace;
 use App\Sending\SendFailed;
 use App\Services\SystemMailer;
@@ -30,7 +31,8 @@ class SendingServerController extends Controller
         $type = $request->query('type');
         abort_unless(isset(SendingServer::TYPES[$type]), 404);
 
-        return view('sending.servers.form', ['server' => new SendingServer(['type' => $type, 'status' => 'active']), 'type' => SendingServer::TYPES[$type]]);
+        return view('sending.servers.form', ['server' => new SendingServer(['type' => $type, 'status' => 'active']), 'type' => SendingServer::TYPES[$type],
+            'strategies' => WarmupStrategy::availableTo(Workspace::current())->orderBy('name')->get()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -48,7 +50,8 @@ class SendingServerController extends Controller
 
     public function edit(SendingServer $server): View
     {
-        return view('sending.servers.form', ['server' => $server, 'type' => SendingServer::TYPES[$server->type]]);
+        return view('sending.servers.form', ['server' => $server, 'type' => SendingServer::TYPES[$server->type],
+            'strategies' => WarmupStrategy::availableTo(Workspace::current())->orderBy('name')->get()]);
     }
 
     public function update(Request $request, SendingServer $server): RedirectResponse
@@ -96,6 +99,9 @@ class SendingServerController extends Controller
             'hourly_limit' => 'nullable|integer|min:1',
             'daily_limit' => 'nullable|integer|min:1',
             'default_from_email' => 'nullable|email',
+            'warmup_strategy_id' => ['nullable', 'integer', Rule::exists('warmup_strategies', 'id')
+                ->where(fn ($q) => $q->whereNull('workspace_id')->orWhere('workspace_id', Workspace::current()->id))],
+            'warmup_started_on' => 'nullable|date',
         ];
 
         foreach ($definition['fields'] as $key => $field) {
@@ -117,6 +123,12 @@ class SendingServerController extends Controller
             $config[$key] = $value;
         }
         $data['config'] = $config;
+        if (empty($data['warmup_strategy_id'])) {
+            $data['warmup_strategy_id'] = null;
+            $data['warmup_started_on'] = null;
+        } else {
+            $data['warmup_started_on'] ??= now(Workspace::current()->timezone)->toDateString();
+        }
 
         return $data;
     }

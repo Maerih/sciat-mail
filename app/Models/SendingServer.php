@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToWorkspace;
 use App\Models\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class SendingServer extends Model
@@ -14,6 +15,7 @@ class SendingServer extends Model
 
     protected $fillable = [
         'workspace_id', 'name', 'type', 'config', 'status', 'hourly_limit', 'daily_limit', 'default_from_email',
+        'warmup_strategy_id', 'warmup_started_on',
     ];
 
     protected $hidden = ['config', 'webhook_secret'];
@@ -23,6 +25,7 @@ class SendingServer extends Model
         return [
             'config' => 'encrypted:array',
             'last_tested_at' => 'datetime',
+            'warmup_started_on' => 'date',
         ];
     }
 
@@ -129,6 +132,40 @@ class SendingServer extends Model
         return $this->where($field ?? 'uid', $value)
             ->where(fn ($q) => $q->whereNull('workspace_id')->orWhere('workspace_id', $workspace?->id))
             ->firstOrFail();
+    }
+
+    public function warmupStrategy(): BelongsTo
+    {
+        return $this->belongsTo(WarmupStrategy::class);
+    }
+
+    /** Current warmup day (1-based) in the server's workspace timezone, or null when not warming up. */
+    public function warmupDay(): ?int
+    {
+        if (! $this->warmup_strategy_id || ! $this->warmup_started_on) {
+            return null;
+        }
+        $today = now($this->workspace?->timezone ?? 'UTC')->startOfDay();
+
+        return (int) $this->warmup_started_on->copy()->startOfDay()->diffInDays($today, false) + 1;
+    }
+
+    public function isWarmingUp(): bool
+    {
+        $day = $this->warmupDay();
+
+        return $day !== null && $day >= 1 && $day < $this->warmupStrategy->days;
+    }
+
+    /** Today's send allowance: the stricter of the daily limit and the warmup quota. */
+    public function effectiveDailyLimit(): ?int
+    {
+        $limits = array_filter([
+            $this->daily_limit,
+            $this->isWarmingUp() ? $this->warmupStrategy->quotaForDay($this->warmupDay()) : null,
+        ], fn ($v) => $v !== null);
+
+        return $limits ? min($limits) : null;
     }
 
     public function typeLabel(): string

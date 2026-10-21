@@ -16,6 +16,22 @@
                     <x-field name="hourly_limit" type="number" min="1" label="Hourly limit" :value="$server->hourly_limit" help="Leave empty for no limit." />
                     <x-field name="daily_limit" type="number" min="1" label="Daily limit" :value="$server->daily_limit" help="Respect your provider's quota (e.g. SES sandbox: 200/day)." />
                 </div>
+                <div class="grid gap-4 border-t border-gray-100 pt-4 sm:grid-cols-2" x-data="{ strategy: @js((string) old('warmup_strategy_id', $server->warmup_strategy_id)) }">
+                    <div>
+                        <label class="label">IP warmup</label>
+                        <select name="warmup_strategy_id" class="input" x-model="strategy">
+                            <option value="">No warmup</option>
+                            @foreach ($strategies as $strategy)<option value="{{ $strategy->id }}">{{ $strategy->name }}</option>@endforeach
+                        </select>
+                        <p class="help">New IPs/domains: ramp volume up gradually. <a href="{{ route('sending.warmup.index') }}" class="text-brand-600 hover:underline">Manage strategies</a></p>
+                    </div>
+                    <div x-show="strategy" x-cloak>
+                        <x-field name="warmup_started_on" type="date" label="Warmup started on" :value="$server->warmup_started_on?->toDateString()" help="Leave empty to start today." />
+                    </div>
+                    @if ($server->isWarmingUp())
+                        <p class="text-sm text-amber-700 sm:col-span-2">Warming up: day {{ $server->warmupDay() }} of {{ $server->warmupStrategy->days }} · today's quota {{ number_format($server->effectiveDailyLimit()) }} emails.</p>
+                    @endif
+                </div>
                 @if (! $server->exists && auth()->user()->isAdmin())
                     <x-toggle name="shared" label="Share with all clients" help="Otherwise only {{ $currentWorkspace->name }} can use this server." />
                 @endif

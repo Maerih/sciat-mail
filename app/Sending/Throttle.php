@@ -12,8 +12,10 @@ class Throttle
 {
     public function hasCapacity(SendingServer $server): bool
     {
+        $daily = $server->effectiveDailyLimit();
+
         return ($server->hourly_limit === null || $this->used($server, 'hour') < $server->hourly_limit)
-            && ($server->daily_limit === null || $this->used($server, 'day') < $server->daily_limit);
+            && ($daily === null || $this->used($server, 'day') < $daily);
     }
 
     public function hit(SendingServer $server): void
@@ -33,16 +35,17 @@ class Throttle
     /** Seconds until the earliest exhausted window resets. */
     public function retryAfter(SendingServer $server): int
     {
+        $now = now()->getTimestamp();
         if ($server->hourly_limit !== null && $this->used($server, 'hour') >= $server->hourly_limit) {
-            return 3600 - (time() % 3600) + 5;
+            return 3600 - ($now % 3600) + 5;
         }
 
-        return 86400 - (time() % 86400) + 5;
+        return 86400 - ($now % 86400) + 5;
     }
 
     protected function key(SendingServer $server, string $window): string
     {
-        $bucket = $window === 'hour' ? date('YmdH') : date('Ymd');
+        $bucket = now()->format($window === 'hour' ? 'YmdH' : 'Ymd');
 
         return "throttle:server:{$server->id}:{$window}:{$bucket}";
     }

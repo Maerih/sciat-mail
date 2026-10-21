@@ -18,7 +18,8 @@
                                     @if ($server->isShared())<span class="badge-purple ml-1">Shared</span>@endif</td>
                                 <td>{{ $server->typeLabel() }}</td>
                                 <td><x-status-badge :status="$server->status" /></td>
-                                <td class="text-gray-500">{{ $server->hourly_limit ? number_format($server->hourly_limit).'/h' : '∞/h' }} · {{ $server->daily_limit ? number_format($server->daily_limit).'/day' : '∞/day' }}</td>
+                                <td class="text-gray-500">{{ $server->hourly_limit ? number_format($server->hourly_limit).'/h' : '∞/h' }} · {{ $server->effectiveDailyLimit() ? number_format($server->effectiveDailyLimit()).'/day' : '∞/day' }}
+                                    @if ($server->isWarmingUp())<span class="badge-yellow ml-1">Warmup day {{ $server->warmupDay() }}/{{ $server->warmupStrategy->days }}</span>@endif</td>
                                 <td>@if ($server->last_tested_at)<span @class(['text-red-600' => $server->last_error, 'text-emerald-600' => ! $server->last_error])>{{ $server->last_error ? 'Failed' : 'OK' }}</span> <span class="text-xs text-gray-400">{{ $server->last_tested_at->diffForHumans() }}</span>@else<span class="text-gray-400">Never</span>@endif</td>
                                 <td class="text-right"><a href="{{ route('sending.servers.edit', $server) }}" class="btn-ghost btn-sm">Configure</a></td>
                             </tr>

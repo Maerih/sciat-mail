@@ -143,6 +143,7 @@ Route::middleware('auth')->group(function () {
             Route::resource('tracking-domains', Controllers\TrackingDomainController::class)->only(['index', 'store', 'destroy']);
 
             Route::resource('blacklist', Controllers\BlacklistController::class)->only(['index', 'store', 'destroy']);
+            Route::resource('warmup', Controllers\WarmupStrategyController::class)->except(['show']);
         });
     });
 });

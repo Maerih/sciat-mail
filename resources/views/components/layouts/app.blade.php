@@ -21,6 +21,7 @@
         ['Sending servers', 'sending.servers.index', 'server', 'sending.servers.*'],
         ['Domains', 'sending.domains.index', 'globe', 'sending.domains.*'],
         ['Tracking domains', 'sending.tracking-domains.index', 'link', 'sending.tracking-domains.*'],
+        ['IP warmup', 'sending.warmup.index', 'clock', 'sending.warmup.*'],
         ['Blacklist', 'sending.blacklist.index', 'ban', 'sending.blacklist.*'],
         'Settings',
         ['Client settings', 'workspaces.edit', 'cog', 'workspaces.edit'],
