@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Promotion</title></head>
+<body style="margin:0;padding:0;background:#fff7ed;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed"><tr><td align="center" style="padding:24px 12px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden">
+    <tr><td style="background:#ea580c;padding:40px 32px;text-align:center;color:#ffffff">
+      <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;opacity:.85">Limited time offer</div>
+      <div style="font-size:44px;font-weight:bold;line-height:1.1;margin:10px 0">25% OFF</div>
+      <div style="font-size:16px">Everything in store, this week only</div>
+    </td></tr>
+    <tr><td style="padding:32px;text-align:center">
+      <p style="margin:0 0 18px;font-size:16px;line-height:1.6">Hi {{ SUBSCRIBER_FIRST_NAME | there }}, as a thank-you for being with us, here's an exclusive discount. Use the code below at checkout.</p>
+      <div style="display:inline-block;border:2px dashed #ea580c;border-radius:8px;padding:12px 28px;font-size:22px;font-weight:bold;letter-spacing:3px;color:#ea580c">SAVE25</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:28px auto 0"><tr><td style="background:#111827;border-radius:8px">
+        <a href="https://example.com/shop" style="display:inline-block;padding:14px 32px;color:#ffffff;font-weight:bold;text-decoration:none">Shop now</a>
+      </td></tr></table>
+      <p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Offer ends Sunday at midnight. Cannot be combined with other offers.</p>
+    </td></tr>
+    <tr><td style="background:#f9fafb;padding:20px 32px;font-size:12px;line-height:1.6;color:#6b7280;text-align:center">
+      {{ CONTACT_ADDRESS }}<br><a href="{{ UNSUBSCRIBE_URL }}" style="color:#6b7280">Unsubscribe</a> · <a href="{{ WEB_VIEW_URL }}" style="color:#6b7280">View online</a>
+    </td></tr>
+  </table>
+</td></tr></table>
+</body></html>

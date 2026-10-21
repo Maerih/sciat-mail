@@ -62,6 +62,7 @@ class ProcessImport implements ShouldQueue
                     $errors[] = "Line {$line}: invalid email \"".Str::limit($email, 60).'"';
                 }
                 $import->processed++;
+
                 continue;
             }
 

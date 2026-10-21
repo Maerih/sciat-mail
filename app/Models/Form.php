@@ -34,7 +34,8 @@ class Form extends Model
 
     public function visibleFields()
     {
+        // getAttribute(): inside a Model subclass `$f->visible` would hit Eloquent's protected $visible property
         return $this->list->fields
-            ->filter(fn (ListField $f) => $f->visible && (! $this->only_required_fields || $f->required));
+            ->filter(fn (ListField $f) => $f->getAttribute('visible') && (! $this->only_required_fields || $f->required));
     }
 }

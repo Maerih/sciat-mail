@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Event invitation</title></head>
+<body style="margin:0;padding:0;background:#ede9fe;font-family:Arial,Helvetica,sans-serif;color:#1f2937">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:28px 12px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden">
+    <tr><td style="background:#6d28d9;padding:36px 32px;color:#ffffff">
+      <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;opacity:.85">You're invited</div>
+      <h1 style="margin:8px 0 0;font-size:30px;line-height:1.2">Event name goes here</h1>
+    </td></tr>
+    <tr><td style="padding:28px 32px">
+      <p style="margin:0 0 18px;font-size:15px;line-height:1.7">Hi {{ SUBSCRIBER_FIRST_NAME | there }}, join us for an afternoon of talks, networking and refreshments.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3ff;border-radius:10px">
+        <tr><td style="padding:16px 20px;font-size:14px;line-height:1.8">
+          <strong>Date:</strong> Friday, 14 November<br><strong>Time:</strong> 2:00 – 5:00 PM<br><strong>Venue:</strong> Venue name, City
+        </td></tr>
+      </table>
+      <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td style="background:#6d28d9;border-radius:8px">
+        <a href="https://example.com/rsvp" style="display:inline-block;padding:13px 28px;color:#ffffff;font-weight:bold;text-decoration:none">RSVP now</a>
+      </td></tr></table>
+      <p style="margin:20px 0 0;font-size:13px;color:#6b7280">Seats are limited — reserve yours early.</p>
+    </td></tr>
+    <tr><td style="background:#f9fafb;padding:18px 32px;font-size:12px;line-height:1.6;color:#6b7280;text-align:center">{{ CONTACT_ADDRESS }}<br><a href="{{ UNSUBSCRIBE_URL }}" style="color:#6b7280">Unsubscribe</a></td></tr>
+  </table>
+</td></tr></table>
+</body></html>

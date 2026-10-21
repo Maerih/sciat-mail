@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
  * Snapshots the campaign's recipients into the delivery ledger (deduplicated by email,
  * suppressed addresses removed) and fans out send batches.
  */
-class LaunchCampaign implements ShouldQueue, ShouldBeUnique
+class LaunchCampaign implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 

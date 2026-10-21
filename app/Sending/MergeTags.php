@@ -2,6 +2,7 @@
 
 namespace App\Sending;
 
+use App\Models\MailList;
 use App\Models\Subscriber;
 
 /**
@@ -20,6 +21,7 @@ class MergeTags
             if ($value === '' && isset($m[2])) {
                 $value = $m[2];
             }
+
             // URLs are inserted raw; everything else is escaped for HTML bodies
             return $escape && ! str_ends_with($m[1], '_URL') ? e($value) : $value;
         }, $content);
@@ -40,7 +42,7 @@ class MergeTags
     }
 
     /** Tags offered in editors. */
-    public static function catalogue(?\App\Models\MailList $list = null): array
+    public static function catalogue(?MailList $list = null): array
     {
         $tags = [
             'SUBSCRIBER_EMAIL' => 'Subscriber email',

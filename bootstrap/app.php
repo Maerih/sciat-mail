@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\SetCurrentWorkspace;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,8 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'workspace' => \App\Http\Middleware\SetCurrentWorkspace::class,
-            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'workspace' => SetCurrentWorkspace::class,
+            'admin' => EnsureAdmin::class,
         ]);
         // Hit by subscribers' mail clients, embedded forms on client sites and ESP webhooks
         $middleware->preventRequestForgery(except: ['subscribe/*', 'webhooks/*', 'u/*']);

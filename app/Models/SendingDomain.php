@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class SendingDomain extends Model
 {
-    use HasUid, BelongsToWorkspace;
+    use BelongsToWorkspace, HasUid;
 
     protected $fillable = ['workspace_id', 'name'];
 

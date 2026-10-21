@@ -26,7 +26,7 @@ class MessageBuilder
         $values = $this->values($campaign, $delivery, $subscriber);
         $subject = MergeTags::render((string) $campaign->subject, $values, false);
 
-        $email = (new Email())
+        $email = (new Email)
             ->from(new Address($campaign->from_email, $campaign->from_name ?? ''))
             ->to($delivery->email)
             ->subject($subject);
@@ -38,11 +38,11 @@ class MessageBuilder
         if ($campaign->isPlain()) {
             $email->text($this->ensureTextFooter(MergeTags::render((string) $campaign->plain, $values, false), $values));
         } else {
-            $html = $this->renderHtml($campaign, $delivery, $values);
-            $email->html($html);
+            $email->html($this->renderHtml($campaign, $delivery, $values));
+            // Text part comes from the untracked body so it carries no preheader filler or pixel
             $email->text($campaign->plain
-                ? MergeTags::render($campaign->plain, $values, false)
-                : HtmlToText::convert($html));
+                ? $this->ensureTextFooter(MergeTags::render($campaign->plain, $values, false), $values)
+                : HtmlToText::convert($this->ensureHtmlFooter(MergeTags::render((string) $campaign->html, $values), $values)));
         }
 
         $this->addHeaders($email, $delivery, $values['UNSUBSCRIBE_URL']);
@@ -54,7 +54,7 @@ class MessageBuilder
     public function simple(string $fromEmail, ?string $fromName, string $to, string $subject, string $html, int $workspaceId,
         SendingServer $server, ?Delivery $delivery = null): Message
     {
-        $email = (new Email())
+        $email = (new Email)
             ->from(new Address($fromEmail, $fromName ?? ''))
             ->to($to)
             ->subject($subject)
@@ -93,13 +93,15 @@ class MessageBuilder
             $html = $this->injectPreheader($html, MergeTags::render($campaign->preheader, $values));
         }
 
+        // Our own unsubscribe / web-view links are never UTM-tagged or click-tracked
+        $ownLinks = [$values['UNSUBSCRIBE_URL'], $values['WEB_VIEW_URL']];
+
         if (! empty($campaign->utm['enabled'])) {
-            $html = $this->rewriteLinks($html, fn ($url) => $this->appendUtm($url, $campaign->utm));
+            $html = $this->rewriteLinks($html, fn ($url) => in_array($url, $ownLinks, true) ? $url : $this->appendUtm($url, $campaign->utm));
         }
 
         if ($track && $campaign->track_click) {
-            $skip = [$values['UNSUBSCRIBE_URL'], $values['WEB_VIEW_URL']];
-            $html = $this->rewriteLinks($html, fn ($url) => in_array($url, $skip, true) ? $url : $this->urls->click($delivery, $url));
+            $html = $this->rewriteLinks($html, fn ($url) => in_array($url, $ownLinks, true) ? $url : $this->urls->click($delivery, $url));
         }
 
         if ($track && $campaign->track_open) {

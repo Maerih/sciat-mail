@@ -3,23 +3,29 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * Creates the first administrator from ADMIN_NAME / ADMIN_EMAIL / ADMIN_PASSWORD in .env
+     * and loads the starter templates.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $email = env('ADMIN_EMAIL');
+        $password = env('ADMIN_PASSWORD');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if ($email && $password) {
+            User::firstOrCreate(['email' => $email], [
+                'name' => env('ADMIN_NAME', 'Administrator'),
+                'password' => $password,
+                'role' => 'admin',
+            ]);
+        } else {
+            $this->command?->warn('ADMIN_EMAIL / ADMIN_PASSWORD not set in .env — no admin user created.');
+        }
+
+        $this->call(TemplateSeeder::class);
     }
 }

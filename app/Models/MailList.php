@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToWorkspace;
 use App\Models\Concerns\HasUid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MailList extends Model
 {
-    use HasUid, BelongsToWorkspace;
+    use BelongsToWorkspace, HasFactory, HasUid;
 
     protected $fillable = [
         'workspace_id', 'name', 'from_name', 'from_email', 'reply_to', 'company', 'address',

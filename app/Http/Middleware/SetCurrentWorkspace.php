@@ -12,7 +12,7 @@ class SetCurrentWorkspace
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
-        $workspace = $user->currentWorkspace ?? Workspace::orderBy('name')->first();
+        $workspace = Workspace::find($user->current_workspace_id) ?? Workspace::orderBy('name')->first();
 
         if (! $workspace) {
             return redirect()->route('workspaces.create');

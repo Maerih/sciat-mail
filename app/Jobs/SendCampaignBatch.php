@@ -66,6 +66,7 @@ class SendCampaignBatch implements ShouldQueue
 
             if (! $delivery->subscriber || ! $delivery->subscriber->isSendable()) {
                 $delivery->forceFill(['status' => 'skipped', 'error' => 'Subscriber is no longer subscribed'])->save();
+
                 continue;
             }
 

@@ -5,13 +5,14 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToWorkspace;
 use App\Models\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 class Campaign extends Model
 {
-    use HasUid, BelongsToWorkspace;
+    use BelongsToWorkspace, HasFactory, HasUid;
 
     public const STATUSES = ['draft', 'scheduled', 'queued', 'sending', 'paused', 'done', 'cancelled', 'error'];
 

@@ -31,10 +31,10 @@ class TransportFactory
         $dsn = $this->dsn($server);
 
         $factory = match (true) {
-            str_starts_with($dsn->getScheme(), 'ses') => new SesTransportFactory(),
-            str_starts_with($dsn->getScheme(), 'sendgrid') => new SendgridTransportFactory(),
-            str_starts_with($dsn->getScheme(), 'mailgun') => new MailgunTransportFactory(),
-            default => new EsmtpTransportFactory(),
+            str_starts_with($dsn->getScheme(), 'ses') => new SesTransportFactory,
+            str_starts_with($dsn->getScheme(), 'sendgrid') => new SendgridTransportFactory,
+            str_starts_with($dsn->getScheme(), 'mailgun') => new MailgunTransportFactory,
+            default => new EsmtpTransportFactory,
         };
 
         return $factory->create($dsn);

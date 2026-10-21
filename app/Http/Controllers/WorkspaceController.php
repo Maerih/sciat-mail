@@ -24,7 +24,7 @@ class WorkspaceController extends Controller
         $workspace = Workspace::create($this->validated($request));
         $request->user()->forceFill(['current_workspace_id' => $workspace->id])->save();
 
-        return redirect()->route('dashboard')->with('success', "Workspace “{$workspace->name}” created.");
+        return redirect()->route('dashboard')->with('success', "Client “{$workspace->name}” created.");
     }
 
     public function switch(Request $request, string $workspace)
@@ -44,7 +44,7 @@ class WorkspaceController extends Controller
     {
         Workspace::current()->update($this->validated($request));
 
-        return back()->with('success', 'Workspace settings saved.');
+        return back()->with('success', 'Client settings saved.');
     }
 
     public function destroy(Request $request)
@@ -53,7 +53,7 @@ class WorkspaceController extends Controller
         Workspace::current()->delete();
         $request->user()->forceFill(['current_workspace_id' => null])->save();
 
-        return redirect()->route('dashboard')->with('success', 'Workspace deleted.');
+        return redirect()->route('dashboard')->with('success', 'Client deleted.');
     }
 
     protected function validated(Request $request): array

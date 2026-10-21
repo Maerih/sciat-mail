@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasUid;
 use App\Models\Concerns\BelongsToWorkspace;
+use App\Models\Concerns\HasUid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class SendingServer extends Model
 {
-    use HasUid, BelongsToWorkspace;
+    use BelongsToWorkspace, HasFactory, HasUid;
 
     protected $fillable = [
         'workspace_id', 'name', 'type', 'config', 'status', 'hourly_limit', 'daily_limit', 'default_from_email',

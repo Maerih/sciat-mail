@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TrackingDomain extends Model
 {
-    use HasUid, BelongsToWorkspace;
+    use BelongsToWorkspace, HasUid;
 
     protected $fillable = ['workspace_id', 'host', 'scheme', 'is_default'];
 
