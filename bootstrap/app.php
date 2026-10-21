@@ -12,7 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'workspace' => \App\Http\Middleware\SetCurrentWorkspace::class,
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+        ]);
+        // Hit by subscribers' mail clients, embedded forms on client sites and ESP webhooks
+        $middleware->preventRequestForgery(except: ['subscribe/*', 'webhooks/*', 'u/*']);
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
