@@ -29,6 +29,7 @@
             <x-toggle name="track_open" label="Track opens" help="Adds an invisible tracking pixel. Apple Mail Privacy Protection can inflate open counts." :checked="$campaign->track_open" />
             <x-toggle name="track_click" label="Track clicks" help="Links are rewritten through your tracking domain." :checked="$campaign->track_click" />
             <x-toggle name="sign_dkim" label="DKIM-sign messages" help="Signs SMTP sends with the verified domain's key. API providers sign with their own keys." :checked="$campaign->sign_dkim" />
+            <x-toggle name="spintax" label="Spintax" help="Write {Hi|Hello|Hey} and each recipient gets one option — useful for varied cold outreach. Works in subject, preheader and content; nesting allowed." :checked="$campaign->spintax" />
             <x-toggle name="skip_failed" label="Skip failed messages" help="Keep sending when an individual delivery fails. Off: the first permanent error stops the campaign." :checked="$campaign->skip_failed" />
         </div>
 

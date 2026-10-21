@@ -302,4 +302,25 @@ class CampaignSendingTest extends TestCase
         $this->assertStringStartsWith('Hi Ann, quick note.', $message->getTextBody());
         $this->assertStringContainsString('Unsubscribe: http', $message->getTextBody());
     }
+
+    public function test_spintax_varies_per_recipient_but_stays_consistent_within_a_message(): void
+    {
+        Subscriber::factory()->for($this->list, 'list')->count(12)->create();
+        $campaign = $this->campaignFor([
+            'spintax' => true,
+            'subject' => '{Alpha|Bravo|Charlie|Delta} news',
+            'html' => '<p>Word: {Alpha|Bravo|Charlie|Delta}</p>',
+        ]);
+
+        app(CampaignService::class)->launch($campaign);
+
+        $subjects = collect($this->transport->sent)->map(fn ($m) => $m->getOriginalMessage()->getSubject());
+        $this->assertGreaterThan(1, $subjects->unique()->count());
+        $this->assertTrue($subjects->every(fn ($s) => preg_match('/^(Alpha|Bravo|Charlie|Delta) news$/', $s) === 1));
+        foreach ($this->transport->sent as $sent) {
+            $message = $sent->getOriginalMessage();
+            $this->assertStringNotContainsString('{', $message->getHtmlBody());
+            $this->assertMatchesRegularExpression('/Word: (Alpha|Bravo|Charlie|Delta)/', $message->getTextBody());
+        }
+    }
 }

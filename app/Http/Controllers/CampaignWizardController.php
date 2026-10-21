@@ -121,6 +121,7 @@ class CampaignWizardController extends Controller
             'track_click' => $request->boolean('track_click'),
             'sign_dkim' => $request->boolean('sign_dkim'),
             'skip_failed' => $request->boolean('skip_failed'),
+            'spintax' => $request->boolean('spintax'),
             'server_weights' => $weights,
             'utm' => ['enabled' => $request->boolean('utm_enabled')] + ($data['utm'] ?? []),
         ])->save();

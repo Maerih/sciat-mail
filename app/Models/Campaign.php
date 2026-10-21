@@ -22,7 +22,7 @@ class Campaign extends Model
 
     protected $fillable = [
         'workspace_id', 'automation_id', 'name', 'type', 'subject', 'preheader', 'from_name', 'from_email', 'reply_to', 'html', 'plain',
-        'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'server_weights', 'utm', 'scheduled_at', 'sending_window', 'ab_config',
+        'track_open', 'track_click', 'sign_dkim', 'skip_failed', 'spintax', 'server_weights', 'utm', 'scheduled_at', 'sending_window', 'ab_config',
     ];
 
     protected function casts(): array
@@ -32,6 +32,7 @@ class Campaign extends Model
             'track_click' => 'boolean',
             'sign_dkim' => 'boolean',
             'skip_failed' => 'boolean',
+            'spintax' => 'boolean',
             'server_weights' => 'array',
             'utm' => 'array',
             'sending_window' => 'array',

@@ -23,6 +23,7 @@ class MessageBuilder
 
     public function forCampaign(Campaign $campaign, Delivery $delivery, ?Subscriber $subscriber, SendingServer $server): Message
     {
+        $campaign = $this->spun($campaign, $delivery);
         $values = $this->values($campaign, $delivery, $subscriber);
         $subject = MergeTags::render((string) $campaign->subject, $values, false);
 
@@ -84,8 +85,27 @@ class MessageBuilder
         ];
     }
 
+    /** Unsaved copy with spintax expanded for this recipient (no-op when spintax is off). */
+    public function spun(Campaign $campaign, Delivery $delivery): Campaign
+    {
+        if (! $campaign->spintax) {
+            return $campaign;
+        }
+
+        $copy = clone $campaign;
+        foreach (['subject', 'preheader', 'html', 'plain'] as $field) {
+            if (filled($copy->{$field})) {
+                $copy->{$field} = Spintax::spin($copy->{$field}, $delivery->uid.':'.$field);
+            }
+        }
+        $copy->spintax = false; // already expanded
+
+        return $copy;
+    }
+
     public function renderHtml(Campaign $campaign, Delivery $delivery, array $values, bool $track = true): string
     {
+        $campaign = $this->spun($campaign, $delivery);
         $html = MergeTags::render((string) $campaign->html, $values);
         $html = $this->ensureHtmlFooter($html, $values);
 
