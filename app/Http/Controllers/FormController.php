@@ -6,6 +6,7 @@ use App\Models\Form;
 use App\Models\MailList;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FormController extends Controller
@@ -82,7 +83,16 @@ class FormController extends Controller
             'success_message' => 'nullable|string|max:1000',
             'consent_text' => 'nullable|string|max:2000',
             'status' => 'required|in:published,draft',
+            'display' => 'required|in:embedded,popup',
+            'popup.trigger' => ['nullable', Rule::in(array_keys(Form::TRIGGERS))],
+            'popup.delay' => 'nullable|integer|min:0|max:600',
+            'popup.scroll' => 'nullable|integer|min:1|max:100',
+            'popup.position' => ['nullable', Rule::in(array_keys(Form::POSITIONS))],
+            'popup.frequency_days' => 'nullable|integer|min:0|max:365',
+            'popup.color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'popup.description' => 'nullable|string|max:500',
         ]) + [
+            'popup_settings' => array_merge(Form::POPUP_DEFAULTS, array_filter((array) $request->input('popup', []), fn ($v) => $v !== null)),
             'only_required_fields' => $request->boolean('only_required_fields'),
             'consent_enabled' => $request->boolean('consent_enabled'),
         ];

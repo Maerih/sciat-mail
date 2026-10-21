@@ -15,7 +15,7 @@
                         @foreach ($forms as $form)
                             <tr>
                                 <td><a href="{{ route('forms.edit', $form) }}" class="font-medium text-gray-900 hover:text-brand-600">{{ $form->name }}</a></td>
-                                <td>{{ $form->list->name }}</td>
+                                <td>{{ $form->list->name }} <span class="badge-gray ml-1">{{ $form->isPopup() ? 'Popup' : 'Embedded' }}</span></td>
                                 <td><x-status-badge :status="$form->status" /></td>
                                 <td class="tabular-nums">{{ number_format($form->submissions) }}</td>
                                 <td class="text-right whitespace-nowrap">

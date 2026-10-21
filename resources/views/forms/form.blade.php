@@ -4,10 +4,40 @@
         <div class="card"><x-empty title="Create a list first" icon="users">Forms add subscribers to a list.
             <x-slot:action><a href="{{ route('lists.create') }}" class="btn-primary">Create list</a></x-slot:action></x-empty></div>
     @else
-        <form method="POST" action="{{ $form->exists ? route('forms.update', $form) : route('forms.store') }}" class="card card-body max-w-2xl space-y-4" x-data="{ consent: @js((bool) old('consent_enabled', $form->consent_enabled)) }">
+        <form method="POST" action="{{ $form->exists ? route('forms.update', $form) : route('forms.store') }}" class="card card-body max-w-2xl space-y-4" x-data="{ consent: @js((bool) old('consent_enabled', $form->consent_enabled)), display: @js(old('display', $form->display ?? 'embedded')), trigger: @js(old('popup.trigger', $form->popup('trigger'))) }">
             @csrf
             @if ($form->exists) @method('PUT') @endif
             <x-field name="name" label="Internal name" :value="$form->name" required />
+            <div>
+                <label class="label">Display as</label>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach (['embedded' => ['Embedded form', 'Placed inside the page where you paste the code.'], 'popup' => ['Popup', 'Appears over the page — modal, slide-in or bar.']] as $value => [$label, $hint])
+                        <label class="flex cursor-pointer gap-3 rounded-lg border p-3" :class="display === @js($value) ? 'border-brand-500 bg-brand-50/50' : 'border-gray-200'">
+                            <input type="radio" name="display" value="{{ $value }}" x-model="display" class="mt-0.5 text-brand-600">
+                            <span><span class="block text-sm font-medium">{{ $label }}</span><span class="text-xs text-gray-500">{{ $hint }}</span></span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+            <div x-show="display === 'popup'" x-cloak class="grid gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-2">
+                <div>
+                    <label class="label">Show</label>
+                    <select name="popup[trigger]" class="input" x-model="trigger">
+                        @foreach (\App\Models\Form::TRIGGERS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                    </select>
+                </div>
+                <div x-show="trigger === 'delay'"><x-field name="popup[delay]" type="number" min="0" label="Delay (seconds)" :value="$form->popup('delay')" /></div>
+                <div x-show="trigger === 'scroll'"><x-field name="popup[scroll]" type="number" min="1" max="100" label="Scroll depth (%)" :value="$form->popup('scroll')" /></div>
+                <div>
+                    <label class="label">Position</label>
+                    <select name="popup[position]" class="input">
+                        @foreach (\App\Models\Form::POSITIONS as $value => $label)<option value="{{ $value }}" @selected($form->popup('position') === $value)>{{ $label }}</option>@endforeach
+                    </select>
+                </div>
+                <x-field name="popup[frequency_days]" type="number" min="0" label="Don't show again for (days)" :value="$form->popup('frequency_days')" help="0 = every page view. Subscribers never see it again." />
+                <x-field name="popup[color]" type="color" label="Button colour" :value="$form->popup('color')" class="[&_input]:h-10 [&_input]:p-1" />
+                <x-field name="popup[description]" type="textarea" rows="2" label="Short pitch under the heading" :value="$form->popup('description')" class="sm:col-span-2" placeholder="Get 10% off your first order and weekly tips." />
+            </div>
             <div>
                 <label class="label">Adds subscribers to</label>
                 <select name="list" class="input" required>

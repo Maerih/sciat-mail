@@ -19,6 +19,7 @@ Route::post('/u/{uid}/{sig}', [Pub\UnsubscribeController::class, 'confirm']);
 
 Route::get('/subscribe/confirm/{uid}/{sig}', [Pub\SubscribeController::class, 'confirm'])->name('subscribe.confirm');
 Route::get('/subscribe/{form}', [Pub\SubscribeController::class, 'show'])->name('subscribe.show');
+Route::get('/forms/{form}/popup.js', [Pub\SubscribeController::class, 'popupScript'])->name('subscribe.popup');
 Route::post('/subscribe/{form}', [Pub\SubscribeController::class, 'store'])->middleware('throttle:20,1')->name('subscribe.store');
 
 Route::post('/webhooks/ses/{server}/{secret}', [Pub\WebhookController::class, 'ses'])->name('webhooks.ses');

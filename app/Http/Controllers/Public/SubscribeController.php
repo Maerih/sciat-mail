@@ -10,12 +10,16 @@ use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class SubscribeController extends Controller
 {
+    /** Popup forms post from client websites; let their scripts read the JSON reply. */
+    public const CORS = ['Access-Control-Allow-Origin' => '*'];
+
     public function show(string $form): View
     {
         $form = $this->form($form);
@@ -44,7 +48,7 @@ class SubscribeController extends Controller
         $validator = Validator::make($request->all(), $rules, ['consent.accepted' => 'Please tick the consent box to subscribe.']);
         if ($validator->fails()) {
             if ($request->expectsJson()) {
-                return response()->json(['ok' => false, 'errors' => $validator->errors()], 422);
+                return response()->json(['ok' => false, 'errors' => $validator->errors()], 422)->withHeaders(self::CORS);
             }
 
             return redirect()->route('subscribe.show', $form->uid)->withErrors($validator)->withInput();
@@ -56,6 +60,20 @@ class SubscribeController extends Controller
         DB::table('forms')->where('id', $form->id)->increment('submissions');
 
         return $this->success($request, $form, $pending);
+    }
+
+    /** Script that client websites include to show a popup form. */
+    public function popupScript(string $form): Response
+    {
+        $form = Form::with('list.fields')->where('uid', $form)->where('status', 'published')->where('display', 'popup')->first();
+        if (! $form) {
+            return response('/* form not available */', 200, ['Content-Type' => 'application/javascript']);
+        }
+
+        return response()->view('public.popup-js', [
+            'form' => $form,
+            'html' => view('public.partials.form-embed', ['form' => $form])->render(),
+        ])->header('Content-Type', 'application/javascript; charset=utf-8')->header('Cache-Control', 'public, max-age=300');
     }
 
     public function confirm(string $uid, string $sig, TrackingUrls $urls, SubscriptionService $subscriptions): View
@@ -77,7 +95,7 @@ class SubscribeController extends Controller
             : ($form->success_message ?: 'Thank you for subscribing!');
 
         if ($request->expectsJson()) {
-            return response()->json(['ok' => true, 'message' => $message]);
+            return response()->json(['ok' => true, 'message' => $message])->withHeaders(self::CORS);
         }
         if ($form->redirect_url) {
             return redirect()->away($form->redirect_url);

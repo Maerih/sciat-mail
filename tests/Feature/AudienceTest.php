@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\SendListEmail;
 use App\Models\Blacklist;
+use App\Models\Form;
 use App\Models\MailList;
 use App\Models\Segment;
 use App\Models\SendingServer;
@@ -237,5 +238,50 @@ class AudienceTest extends TestCase
         $this->signInTo($this->workspace);
 
         $this->get(route('forms.edit', $foreignForm->uid))->assertNotFound();
+    }
+
+    public function test_popup_script_serves_settings_and_form_for_published_popups_only(): void
+    {
+        $form = $this->list->forms()->create([
+            'name' => 'Promo', 'title' => 'Get 10% off', 'display' => 'popup',
+            'popup_settings' => ['trigger' => 'scroll', 'scroll' => 60, 'position' => 'slide-right', 'frequency_days' => 3, 'color' => '#ff0000', 'description' => 'Join us'],
+        ]);
+
+        $this->get(route('subscribe.popup', $form->uid))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/javascript; charset=utf-8')
+            ->assertSee('"trigger":"scroll"', false)
+            ->assertSee('"position":"slide-right"', false)
+            ->assertSee('"action":"'.route('subscribe.store', $form->uid).'"', false)
+            ->assertSee('website_url', false);
+
+        $form->update(['status' => 'draft']);
+        $this->get(route('subscribe.popup', $form->uid))->assertOk()->assertSee('form not available');
+    }
+
+    public function test_json_signup_replies_carry_cors_header_for_popups_on_client_sites(): void
+    {
+        $form = $this->list->forms()->create(['name' => 'Promo', 'display' => 'popup']);
+
+        $this->postJson(route('subscribe.store', $form->uid), ['EMAIL' => 'pop@example.com'])
+            ->assertOk()->assertHeader('Access-Control-Allow-Origin', '*');
+        $this->postJson(route('subscribe.store', $form->uid), ['EMAIL' => 'nope'])
+            ->assertStatus(422)->assertHeader('Access-Control-Allow-Origin', '*');
+    }
+
+    public function test_popup_settings_are_saved_with_defaults_and_validated(): void
+    {
+        $this->signInTo($this->workspace);
+        $payload = ['list' => $this->list->uid, 'name' => 'Exit popup', 'button_text' => 'Join', 'status' => 'published', 'display' => 'popup'];
+
+        $this->post(route('forms.store'), $payload + ['popup' => ['color' => 'red']])->assertSessionHasErrors('popup.color');
+        $this->post(route('forms.store'), $payload + ['popup' => ['trigger' => 'exit', 'color' => '#112233']])->assertRedirect();
+
+        $form = Form::where('name', 'Exit popup')->first();
+        $this->assertTrue($form->isPopup());
+        $this->assertSame('exit', $form->popup('trigger'));
+        $this->assertSame('#112233', $form->popup('color'));
+        $this->assertSame('center', $form->popup('position'), 'defaults fill unspecified settings');
+        $this->get(route('forms.embed', $form))->assertOk()->assertSee(route('subscribe.popup', $form->uid), false);
     }
 }
