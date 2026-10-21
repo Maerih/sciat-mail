@@ -42,7 +42,19 @@ class WorkspaceController extends Controller
 
     public function update(Request $request)
     {
-        Workspace::current()->update($this->validated($request));
+        $workspace = Workspace::current();
+        $data = $this->validated($request) + $request->validate([
+            'brand_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'website' => 'nullable|url|max:255',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+        ]);
+        if ($request->hasFile('logo')) {
+            $data['logo_path'] = $request->file('logo')->store('branding/'.$workspace->uid, 'public');
+        } elseif ($request->boolean('remove_logo')) {
+            $data['logo_path'] = null;
+        }
+        unset($data['logo']);
+        $workspace->update($data);
 
         return back()->with('success', 'Client settings saved.');
     }

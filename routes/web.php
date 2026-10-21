@@ -47,6 +47,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('admin')->group(function () {
         Route::get('/workspaces', [Controllers\WorkspaceController::class, 'index'])->name('workspaces.index');
+        Route::get('/platform', [Controllers\PlatformSettingsController::class, 'edit'])->name('platform.edit');
+        Route::put('/platform', [Controllers\PlatformSettingsController::class, 'update'])->name('platform.update');
         Route::resource('team', Controllers\TeamController::class)->only(['index', 'store', 'destroy'])
             ->parameters(['team' => 'user']);
     });

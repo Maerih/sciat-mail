@@ -11,7 +11,7 @@ class Workspace extends Model
 {
     use HasFactory, HasUid;
 
-    protected $fillable = ['name', 'timezone', 'company', 'address', 'contact_email'];
+    protected $fillable = ['name', 'timezone', 'company', 'address', 'contact_email', 'website', 'brand_color', 'logo_path'];
 
     protected static ?Workspace $current = null;
 

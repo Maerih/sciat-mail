@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasUid;
+use App\Services\Branding;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -44,7 +45,13 @@ class Form extends Model
 
     public function popup(string $key): int|string
     {
-        return ($this->popup_settings ?? [])[$key] ?? self::POPUP_DEFAULTS[$key];
+        $value = ($this->popup_settings ?? [])[$key] ?? null;
+        // the popup button follows the client's brand colour unless one was chosen
+        if ($key === 'color' && ($value === null || $value === self::POPUP_DEFAULTS['color'])) {
+            return Branding::clientColor($this->list?->workspace);
+        }
+
+        return $value ?? self::POPUP_DEFAULTS[$key];
     }
 
     public function list(): BelongsTo

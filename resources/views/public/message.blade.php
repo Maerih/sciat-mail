@@ -1,4 +1,4 @@
-<x-layouts.guest :title="$title">
+<x-layouts.guest :title="$title" :brand="$brand ?? null">
     <div class="card card-body p-8 text-center">
         <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"><x-icon name="check" class="size-6" /></div>
         <h1 class="mt-4 text-lg font-semibold text-gray-900">{{ $title }}</h1>

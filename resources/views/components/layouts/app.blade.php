@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ isset($title) ? $title.' · ' : '' }}{{ config('app.name') }}</title>
+    <title>{{ isset($title) ? $title.' · ' : '' }}{{ \App\Services\Branding::appName() }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if ($brandCss = \App\Services\Branding::css(\App\Services\Branding::appColor()))<style>{!! $brandCss !!}</style>@endif
 </head>
 <body class="h-full font-sans text-gray-800 antialiased" x-data="{ nav: false }">
 @php
@@ -32,6 +33,7 @@
     if (auth()->user()->isAdmin()) {
         $nav[] = ['All clients', 'workspaces.index', 'building', 'workspaces.index'];
         $nav[] = ['Team', 'team.index', 'team', 'team.*'];
+        $nav[] = ['Platform branding', 'platform.edit', 'template', 'platform.*'];
     }
 @endphp
 
@@ -40,8 +42,12 @@
 <aside :class="nav ? 'translate-x-0' : '-translate-x-full'"
        class="fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gray-900 transition-transform lg:translate-x-0">
     <div class="flex h-16 shrink-0 items-center gap-2 px-5">
-        <div class="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-white"><x-icon name="paper-airplane" class="size-4.5" /></div>
-        <span class="text-base font-semibold text-white">{{ config('app.name') }}</span>
+        @if ($platformLogo = \App\Services\Branding::appLogo())
+            <img src="{{ $platformLogo }}" alt="" class="h-8 max-w-[10rem] object-contain">
+        @else
+            <div class="flex size-8 items-center justify-center rounded-lg bg-brand-500 text-white"><x-icon name="paper-airplane" class="size-4.5" /></div>
+        @endif
+        <span class="truncate text-base font-semibold text-white">{{ \App\Services\Branding::appName() }}</span>
     </div>
 
     @isset($currentWorkspace)
@@ -104,7 +110,7 @@
         <button type="button" class="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100" @click="nav = true" aria-label="Open menu">
             <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
         </button>
-        <span class="font-semibold">{{ $currentWorkspace->name ?? config('app.name') }}</span>
+        <span class="font-semibold">{{ $currentWorkspace->name ?? \App\Services\Branding::appName() }}</span>
     </header>
 
     <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

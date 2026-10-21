@@ -5,7 +5,7 @@
 .sm-form .sm-row{margin-bottom:12px}
 .sm-form input[type=text],.sm-form input[type=email],.sm-form input[type=number],.sm-form input[type=date],.sm-form select{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px}
 .sm-form .sm-check{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400}
-.sm-form button{width:100%;padding:10px 14px;border:0;border-radius:8px;background:#4f46e5;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.sm-form button{width:100%;padding:10px 14px;border:0;border-radius:8px;background:{{ \App\Services\Branding::clientColor($form->list->workspace) }};color:#fff;font-size:15px;font-weight:600;cursor:pointer}
 .sm-form .sm-hp{position:absolute;left:-5000px}
 </style>
 <form class="sm-form" method="POST" action="{{ route('subscribe.store', $form->uid) }}">

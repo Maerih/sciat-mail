@@ -32,13 +32,14 @@ class SendListEmail implements ShouldQueue
 
         [$to, $subject, $html] = match ($this->type) {
             'confirm' => [$subscriber->email, 'Please confirm your subscription to '.$list->name,
-                view('emails.confirm', ['list' => $list, 'url' => $urls->confirm($subscriber)])->render()],
+                view('emails.confirm', ['list' => $list, 'url' => $urls->confirm($subscriber), 'brandWorkspace' => $workspace])->render()],
             'welcome' => [$subscriber->email, $list->welcome_subject ?: 'Welcome to '.$list->name,
                 view('emails.welcome', [
                     'list' => $list,
                     'body' => $list->welcome_html,
                     'subscriber' => $subscriber,
                     'unsubscribeUrl' => $urls->subscriberUnsubscribe($subscriber),
+                    'brandWorkspace' => $workspace,
                 ])->render()],
             'unsubscribe_notice' => [$list->notification_email ?: $workspace->contact_email ?: $list->from_email,
                 $subscriber->email.' unsubscribed from '.$list->name,

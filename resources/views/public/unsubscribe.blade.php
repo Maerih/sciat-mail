@@ -1,4 +1,4 @@
-<x-layouts.guest title="Unsubscribe">
+<x-layouts.guest title="Unsubscribe" :brand="$brand ?? null">
     <div class="card card-body p-8 text-center">
         @if ($done)
             <div class="mx-auto flex size-12 items-center justify-center rounded-full bg-gray-100 text-gray-600"><x-icon name="check" class="size-6" /></div>

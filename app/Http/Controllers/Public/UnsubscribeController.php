@@ -26,6 +26,7 @@ class UnsubscribeController extends Controller
             'email' => $delivery->email,
             'listName' => $delivery->subscriber?->list?->name,
             'done' => $delivery->subscriber?->status === 'unsubscribed',
+            'brand' => $delivery->workspace,
         ]);
     }
 
@@ -39,14 +40,14 @@ class UnsubscribeController extends Controller
             return response('Unsubscribed', 200);
         }
 
-        return view('public.unsubscribe', ['email' => $delivery->email, 'listName' => $delivery->subscriber?->list?->name, 'done' => true]);
+        return view('public.unsubscribe', ['email' => $delivery->email, 'listName' => $delivery->subscriber?->list?->name, 'done' => true, 'brand' => $delivery->workspace]);
     }
 
     public function showSubscriber(string $uid, string $sig, TrackingUrls $urls): View
     {
         $subscriber = $this->subscriber($uid, $sig, $urls);
 
-        return view('public.unsubscribe', ['email' => $subscriber->email, 'listName' => $subscriber->list->name, 'done' => $subscriber->status === 'unsubscribed']);
+        return view('public.unsubscribe', ['email' => $subscriber->email, 'listName' => $subscriber->list->name, 'done' => $subscriber->status === 'unsubscribed', 'brand' => $subscriber->list->workspace]);
     }
 
     public function confirmSubscriber(Request $request, string $uid, string $sig, TrackingUrls $urls, SubscriptionService $subscriptions): View|Response
@@ -58,20 +59,20 @@ class UnsubscribeController extends Controller
             return response('Unsubscribed', 200);
         }
 
-        return view('public.unsubscribe', ['email' => $subscriber->email, 'listName' => $subscriber->list->name, 'done' => true]);
+        return view('public.unsubscribe', ['email' => $subscriber->email, 'listName' => $subscriber->list->name, 'done' => true, 'brand' => $subscriber->list->workspace]);
     }
 
     protected function delivery(string $uid, string $sig, TrackingUrls $urls): Delivery
     {
         abort_unless($urls->verify('unsub|'.$uid, $sig), 404);
 
-        return Delivery::with('subscriber.list')->where('uid', $uid)->firstOrFail();
+        return Delivery::with('subscriber.list', 'workspace')->where('uid', $uid)->firstOrFail();
     }
 
     protected function subscriber(string $uid, string $sig, TrackingUrls $urls): Subscriber
     {
         abort_unless($urls->verify('unsub-s|'.$uid, $sig), 404);
 
-        return Subscriber::with('list')->where('uid', $uid)->firstOrFail();
+        return Subscriber::with('list.workspace')->where('uid', $uid)->firstOrFail();
     }
 }

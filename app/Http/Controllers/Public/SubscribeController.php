@@ -85,6 +85,7 @@ class SubscribeController extends Controller
         return view('public.message', [
             'title' => 'Subscription confirmed',
             'message' => 'Thanks! '.$subscriber->email.' is now subscribed to '.$subscriber->list->name.'.',
+            'brand' => $subscriber->list->workspace,
         ]);
     }
 
@@ -101,7 +102,7 @@ class SubscribeController extends Controller
             return redirect()->away($form->redirect_url);
         }
 
-        return view('public.message', ['title' => $pending ? 'Check your inbox' : 'You are subscribed', 'message' => $message]);
+        return view('public.message', ['title' => $pending ? 'Check your inbox' : 'You are subscribed', 'message' => $message, 'brand' => $form->list->workspace]);
     }
 
     protected function form(string $uid): Form

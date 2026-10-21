@@ -2,6 +2,11 @@
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#1f2937">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:32px 12px"><tr><td align="center">
+@isset($brandWorkspace)
+    @if ($logo = \App\Services\Branding::clientLogo($brandWorkspace))
+        <div style="max-width:560px;text-align:center;padding:0 0 16px"><img src="{{ $logo }}" alt="{{ $brandWorkspace->company ?: $brandWorkspace->name }}" style="max-height:48px;max-width:220px"></div>
+    @endif
+@endisset
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;padding:32px">
 <tr><td style="font-size:15px;line-height:1.6">
 @yield('content')

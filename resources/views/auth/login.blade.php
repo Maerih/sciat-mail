@@ -1,7 +1,11 @@
 <x-layouts.guest title="Log in">
     <div class="mb-8 flex items-center justify-center gap-2">
-        <div class="flex size-9 items-center justify-center rounded-lg bg-brand-600 text-white"><x-icon name="paper-airplane" class="size-5" /></div>
-        <span class="text-lg font-semibold">{{ config('app.name') }}</span>
+        @if ($platformLogo = \App\Services\Branding::appLogo())
+            <img src="{{ $platformLogo }}" alt="" class="h-10 max-w-[12rem] object-contain">
+        @else
+            <div class="flex size-9 items-center justify-center rounded-lg bg-brand-600 text-white"><x-icon name="paper-airplane" class="size-5" /></div>
+        @endif
+        <span class="text-lg font-semibold">{{ \App\Services\Branding::appName() }}</span>
     </div>
     <div class="card card-body p-7">
         <h1 class="text-lg font-semibold text-gray-900">Log in to your account</h1>
