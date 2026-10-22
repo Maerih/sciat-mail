@@ -18,6 +18,17 @@
                     <x-toggle name="default_track_click" label="Track clicks" :checked="$values['default_track_click']" />
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header"><div><h2 class="card-title">SMS</h2><p class="text-xs text-[var(--muted)]">Defaults for text messages. Each client can override the country.</p></div></div>
+                <div class="card-body grid gap-4 sm:grid-cols-2">
+                    <div><label class="label">Default country</label>
+                        <select name="sms_default_country" class="input">
+                            @foreach (config('calling_codes') as $code => [$dial])<option value="{{ $code }}" @selected(\App\Models\Setting::get('sms_default_country', 'KE') === $code)>{{ config('countries.'.$code, $code) }} (+{{ $dial }})</option>@endforeach
+                        </select>
+                        <p class="help">Local numbers (0712 345 678) are read as this country's.</p></div>
+                    <x-field name="sms_opt_out_text" label="Default opt-out line" :value="\App\Models\Setting::get('sms_opt_out_text', 'Reply STOP to opt out')" help="Pre-filled on new SMS campaigns." />
+                </div>
+            </div>
             <div class="flex justify-end"><button class="btn-primary"><x-icon name="check" class="size-4.5" /> Save settings</button></div>
         </form>
     </x-settings-frame>

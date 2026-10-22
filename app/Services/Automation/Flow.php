@@ -13,6 +13,7 @@ class Flow
 {
     public const TYPES = [
         'send' => 'Send email',
+        'sms' => 'Send SMS',
         'wait' => 'Wait',
         'condition' => 'Condition',
         'action' => 'Action',

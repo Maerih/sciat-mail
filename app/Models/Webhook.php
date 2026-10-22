@@ -20,6 +20,9 @@ class Webhook extends Model
         'email.bounced' => 'Email bounced',
         'email.complained' => 'Spam complaint',
         'campaign.finished' => 'Campaign finished sending',
+        'sms.delivered' => 'SMS delivered',
+        'sms.failed' => 'SMS failed',
+        'sms.received' => 'SMS reply received',
     ];
 
     /** Consecutive failed deliveries after which the endpoint is switched off. */

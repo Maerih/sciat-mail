@@ -20,7 +20,7 @@
     @elseif ($field->type === 'dropdown')
         <label>{{ $field->label }}{{ $field->required ? ' *' : '' }}</label><select name="{{ $field->tag }}" @required($field->required)><option value=""></option>@foreach ($field->options ?? [] as $option)<option>{{ $option }}</option>@endforeach</select>
     @else
-        <label>{{ $field->label }}{{ $field->required ? ' *' : '' }}</label><input type="{{ ['number' => 'number', 'date' => 'date'][$field->type] ?? 'text' }}" name="{{ $field->tag }}" @required($field->required)>
+        <label>{{ $field->label }}{{ $field->required ? ' *' : '' }}</label><input type="{{ ['number' => 'number', 'date' => 'date', 'phone' => 'tel'][$field->type] ?? 'text' }}" name="{{ $field->tag }}" @required($field->required)>
     @endif
     </div>
 @endforeach

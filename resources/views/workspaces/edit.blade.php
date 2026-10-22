@@ -27,6 +27,7 @@
                 <div class="mt-4 grid gap-4 sm:grid-cols-2">
                     <x-field name="monthly_email_limit" type="number" min="0" label="Emails per month" :value="$workspace->monthly_email_limit" />
                     <x-field name="contact_limit" type="number" min="0" label="Contacts" :value="$workspace->contact_limit" />
+                    <x-field name="monthly_sms_limit" type="number" min="0" label="SMS per month" :value="$workspace->monthly_sms_limit" />
                 </div>
             </div>
         @endif

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Jobs\TriggerAutomations;
 use App\Models\Concerns\HasUid;
 use App\Services\Webhooks;
+use App\Sms\PhoneNumber;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ class Subscriber extends Model
     public const STATUSES = ['subscribed', 'unconfirmed', 'unsubscribed', 'blacklisted'];
 
     protected $fillable = [
-        'mail_list_id', 'email', 'status', 'data', 'tags', 'source', 'ip', 'confirmed_at', 'unsubscribed_at',
+        'mail_list_id', 'email', 'status', 'data', 'tags', 'source', 'ip', 'confirmed_at', 'unsubscribed_at', 'sms_opted_out_at',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class Subscriber extends Model
             'tags' => 'array',
             'confirmed_at' => 'datetime',
             'unsubscribed_at' => 'datetime',
+            'sms_opted_out_at' => 'datetime',
             'last_open_at' => 'datetime',
             'last_click_at' => 'datetime',
         ];
@@ -36,6 +38,10 @@ class Subscriber extends Model
     {
         static::saving(function (Subscriber $s) {
             $s->email = strtolower(trim($s->email));
+            // Keep the normalised SMS number in step with the list's phone field
+            if ($s->isDirty('data') && $s->mail_list_id && ($tag = $s->list?->phoneTag())) {
+                $s->phone = PhoneNumber::normalize($s->data[$tag] ?? null, $s->list->workspace?->sms_country);
+            }
         });
 
         static::created(function (Subscriber $s) {

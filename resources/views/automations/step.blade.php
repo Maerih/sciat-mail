@@ -50,6 +50,20 @@
                 </div>
             </div>
 
+        @elseif ($step['type'] === 'sms')
+            <p class="text-sm text-[var(--muted)]">Texts the contact's phone number (the list's phone field). Contacts without a number, or who replied STOP, are skipped. Tip: put this on the “No” path of an “Opened an email” condition to follow up with people who ignored your email.</p>
+            @include('sms._composer', ['name' => 'message', 'value' => old('message', $step['message'] ?? ''), 'tags' => \App\Sending\MergeTags::catalogue($automation->list)])
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div><label class="label">SMS provider</label>
+                    <select name="provider_id" class="input">
+                        <option value="">Default provider</option>
+                        @foreach ($smsProviders as $provider)<option value="{{ $provider->id }}" @selected(($step['provider_id'] ?? null) == $provider->id)>{{ $provider->name }} ({{ $provider->typeLabel() }})</option>@endforeach
+                    </select>
+                    @if ($smsProviders->isEmpty())<p class="help text-amber-600">No SMS provider yet — <a href="{{ route('sms.providers.index') }}" class="underline">add one</a>.</p>@endif
+                </div>
+                <x-field name="sender" label="Sender ID (optional)" :value="$step['sender'] ?? ''" help="Leave blank to use the provider's default." />
+            </div>
+
         @elseif ($step['type'] === 'action')
             <div x-data="{ action: @js(old('action', $step['action'] ?? 'add_tag')) }" class="space-y-4">
                 <div>

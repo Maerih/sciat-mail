@@ -12,6 +12,9 @@
         @if (in_array($campaign->status, ['queued', 'sending', 'paused', 'error']))
             <form method="POST" action="{{ route('campaigns.cancel', $campaign) }}" onsubmit="return confirm('Cancel this campaign? Remaining recipients will not be emailed.')">@csrf<button class="btn-ghost text-red-600 hover:bg-red-50">Cancel</button></form>
         @endif
+        @if ($campaign->status === 'done')
+            <form method="POST" action="{{ route('sms.campaigns.store', ['campaign' => $campaign->uid]) }}">@csrf<button class="btn-secondary" title="Text the recipients who did not open this email"><x-icon name="sms" class="size-4.5" /> SMS non-openers</button></form>
+        @endif
         <form method="POST" action="{{ route('campaigns.duplicate', $campaign) }}">@csrf<button class="btn-secondary">Duplicate</button></form>
         @endunless
     </x-slot:actions>

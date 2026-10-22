@@ -6,7 +6,7 @@
             <x-icon name="plus" class="size-4" />
         </button>
         <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-1/2 z-20 mt-1 w-48 -translate-x-1/2 rounded-lg border border-gray-200 bg-white p-1 shadow-lg">
-            @foreach (['send' => ['envelope', 'Send email'], 'wait' => ['clock', 'Wait'], 'condition' => ['branch', 'Condition (yes / no)'], 'action' => ['tag', 'Action']] as $type => [$icon, $label])
+            @foreach (['send' => ['envelope', 'Send email'], 'wait' => ['clock', 'Wait'], 'sms' => ['sms', 'Send SMS'], 'condition' => ['branch', 'Condition (yes / no)'], 'action' => ['tag', 'Action']] as $type => [$icon, $label])
                 <form method="POST" action="{{ route('automations.steps.store', $automation) }}">
                     @csrf
                     <input type="hidden" name="type" value="{{ $type }}">

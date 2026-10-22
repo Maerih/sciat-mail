@@ -16,7 +16,7 @@ class MailList extends Model
     protected $fillable = [
         'workspace_id', 'name', 'from_name', 'from_email', 'reply_to', 'company', 'address',
         'default_sending_server_id', 'double_optin', 'send_welcome_email', 'unsubscribe_notification',
-        'notification_email', 'welcome_subject', 'welcome_html',
+        'notification_email', 'welcome_subject', 'welcome_html', 'phone_field',
     ];
 
     protected function casts(): array
@@ -40,6 +40,20 @@ class MailList extends Model
                 $list->fields()->create($field + ['type' => 'text', 'sort' => $i + 1]);
             }
         });
+    }
+
+    public const PHONE_TAGS = ['PHONE', 'MOBILE', 'PHONE_NUMBER', 'MOBILE_NUMBER', 'CELL', 'TELEPHONE', 'MSISDN'];
+
+    /** The field holding SMS numbers: the chosen one, else a phone-type field, else a field named like PHONE. */
+    public function phoneTag(): ?string
+    {
+        if ($this->phone_field) {
+            return $this->phone_field;
+        }
+        $fields = $this->relationLoaded('fields') ? $this->fields : $this->fields()->get();
+
+        return $fields->firstWhere('type', 'phone')?->tag
+            ?? $fields->first(fn ($field) => in_array(strtoupper($field->tag), self::PHONE_TAGS, true))?->tag;
     }
 
     public function fields(): HasMany

@@ -27,6 +27,11 @@
             ['Subscribers', 'audience.subscribers', 'group', 'audience.subscribers'],
             ['Forms', 'forms.index', 'edit_note', 'forms.*'],
         ]],
+        ['SMS', [
+            ['SMS campaigns', 'sms.campaigns.index', 'sms', 'sms.campaigns.*'],
+            ['SMS inbox', 'sms.inbox', 'forum', 'sms.inbox*'],
+            ['SMS providers', 'sms.providers.index', 'settings_input_antenna', 'sms.providers.*'],
+        ]],
         ['Sending', [
             ['Sending servers', 'sending.servers.index', 'dns', 'sending.servers.*'],
             ['Warmup strategies', 'sending.warmup.index', 'local_fire_department', 'sending.warmup.*'],

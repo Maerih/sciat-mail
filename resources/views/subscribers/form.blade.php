@@ -19,7 +19,7 @@
             @elseif ($field->type === 'checkbox')
                 <x-toggle :name="$field->tag" :label="$field->label" :checked="(bool) $value" />
             @else
-                <x-field :name="$field->tag" :label="$field->label" :type="['number' => 'number', 'date' => 'date'][$field->type] ?? 'text'" :value="$value" :required="$field->required" />
+                <x-field :name="$field->tag" :label="$field->label" :type="['number' => 'number', 'date' => 'date', 'phone' => 'tel'][$field->type] ?? 'text'" :value="$value" :required="$field->required" />
             @endif
         @endforeach
         <x-field name="tags" label="Tags" :value="implode(', ', $subscriber->tags ?? [])" help="Comma separated." />

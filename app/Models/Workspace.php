@@ -11,7 +11,7 @@ class Workspace extends Model
 {
     use HasFactory, HasUid;
 
-    protected $fillable = ['name', 'timezone', 'company', 'address', 'contact_email', 'website', 'brand_color', 'logo_path'];
+    protected $fillable = ['name', 'timezone', 'company', 'address', 'contact_email', 'website', 'brand_color', 'logo_path', 'sms_country'];
 
     protected $casts = ['sending_suspended_at' => 'datetime', 'health_reviewed_at' => 'datetime'];
 

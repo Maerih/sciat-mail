@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Delivery;
 use App\Models\MailList;
+use App\Models\SmsMessage;
 use App\Models\Subscriber;
 use App\Models\Workspace;
 
@@ -26,6 +27,19 @@ class Quota
     public static function emailsRemaining(Workspace $workspace): ?int
     {
         return $workspace->monthly_email_limit === null ? null : max(0, $workspace->monthly_email_limit - static::emailsUsed($workspace));
+    }
+
+    public static function smsUsed(Workspace $workspace): int
+    {
+        $start = now($workspace->timezone)->startOfMonth()->utc();
+
+        return SmsMessage::where('workspace_id', $workspace->id)->where('direction', 'out')
+            ->whereIn('status', ['queued', 'sent', 'delivered'])->where('created_at', '>=', $start)->count();
+    }
+
+    public static function smsRemaining(Workspace $workspace): ?int
+    {
+        return $workspace->monthly_sms_limit === null ? null : max(0, $workspace->monthly_sms_limit - static::smsUsed($workspace));
     }
 
     public static function contactsUsed(Workspace $workspace): int

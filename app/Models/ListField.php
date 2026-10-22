@@ -9,7 +9,7 @@ class ListField extends Model
 {
     protected $fillable = ['label', 'tag', 'type', 'options', 'default_value', 'required', 'visible', 'sort'];
 
-    public const TYPES = ['text' => 'Text', 'number' => 'Number', 'date' => 'Date', 'dropdown' => 'Dropdown', 'checkbox' => 'Checkbox'];
+    public const TYPES = ['text' => 'Text', 'number' => 'Number', 'date' => 'Date', 'dropdown' => 'Dropdown', 'checkbox' => 'Checkbox', 'phone' => 'Phone number'];
 
     protected function casts(): array
     {
@@ -35,6 +35,7 @@ class ListField extends Model
             'date' => ['date'],
             'dropdown' => ['in:'.implode(',', $this->options ?? [])],
             'checkbox' => ['boolean'],
+            'phone' => ['string', 'max:32', 'regex:/^[+\d\s().-]{7,32}$/'],
             default => ['string', 'max:1000'],
         });
     }

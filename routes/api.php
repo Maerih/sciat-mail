@@ -33,4 +33,6 @@ Route::prefix('v1')->name('api.')->middleware('throttle:api')->group(function ()
     Route::post('automations/{automation}/enroll', [V1\AutomationController::class, 'enroll'])->name('automations.enroll');
 
     Route::post('send', V1\SendController::class)->name('send');
+    Route::post('sms', [V1\SmsController::class, 'store'])->name('sms.store');
+    Route::get('sms/{uid}', [V1\SmsController::class, 'show'])->name('sms.show');
 });

@@ -8,6 +8,7 @@
             'send' => ['envelope', 'bg-brand-50 text-brand-600', 'Send email', $email?->subject ?: 'No subject yet'],
             'wait' => ['clock', 'bg-amber-50 text-amber-600', 'Wait', ($step['amount'] ?? 1).' '.($step['unit'] ?? 'days')],
             'condition' => ['branch', 'bg-violet-50 text-violet-600', 'Condition', \App\Services\Automation\Flow::CONDITIONS[$step['rule']['kind'] ?? ''] ?? 'Condition'],
+            'sms' => ['sms', 'bg-blue-50 text-blue-600', 'Send SMS', \Illuminate\Support\Str::limit((string) ($step['message'] ?? ''), 60) ?: 'No message yet'],
             'action' => ['tag', 'bg-emerald-50 text-emerald-600', \App\Services\Automation\Flow::ACTIONS[$step['action'] ?? ''] ?? 'Action', $step['tag'] ?? $step['field'] ?? ''],
         };
         if ($step['type'] === 'condition') {

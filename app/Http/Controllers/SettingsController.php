@@ -91,7 +91,12 @@ class SettingsController extends Controller
 
     public function updateSending(Request $request): RedirectResponse
     {
-        Setting::put(collect(self::SENDING_DEFAULTS)->mapWithKeys(fn ($default, $key) => [$key => $request->boolean($key) ? '1' : '0'])->all());
+        $sms = $request->validate([
+            'sms_default_country' => ['nullable', Rule::in(array_keys(config('calling_codes')))],
+            'sms_opt_out_text' => 'nullable|string|max:80',
+        ]);
+        $sms['sms_default_country'] ??= Setting::get('sms_default_country', 'KE');
+        Setting::put($sms + collect(self::SENDING_DEFAULTS)->mapWithKeys(fn ($default, $key) => [$key => $request->boolean($key) ? '1' : '0'])->all());
 
         return back()->with('success', 'Sending defaults saved.');
     }

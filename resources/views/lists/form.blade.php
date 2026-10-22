@@ -39,6 +39,18 @@
             </div>
         </div>
 
+        @if ($list->exists)
+            <div class="card card-body space-y-3">
+                <h2 class="card-title">SMS</h2>
+                <div><label class="label">Phone number field</label>
+                    <select name="phone_field" class="input">
+                        <option value="">Automatic{{ $list->phoneTag() ? ' ('.$list->phoneTag().')' : ' — no phone field found' }}</option>
+                        @foreach ($list->fields as $field)<option value="{{ $field->tag }}" @selected($list->phone_field === $field->tag)>{{ $field->label }} ({{ $field->tag }})</option>@endforeach
+                    </select>
+                    <p class="help">SMS campaigns and automations text the number in this field. Add a field of type “Phone number” under Fields if the list has none.</p></div>
+            </div>
+        @endif
+
         <div class="card card-body space-y-4" x-data="{ welcome: @js((bool) old('send_welcome_email', $list->send_welcome_email)), notify: @js((bool) old('unsubscribe_notification', $list->unsubscribe_notification)) }">
             <h2 class="card-title">Subscription settings</h2>
             <x-toggle name="double_optin" label="Double opt-in" help="Subscribers must click a confirmation link before they receive campaigns." :checked="$list->double_optin" />

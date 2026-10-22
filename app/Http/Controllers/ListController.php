@@ -111,6 +111,7 @@ class ListController extends Controller
             'notification_email' => 'nullable|email',
             'welcome_subject' => 'nullable|string|max:255',
             'welcome_html' => 'nullable|string',
+            'phone_field' => 'nullable|string|max:64',
         ]);
 
         if (! empty($data['default_sending_server_id'])

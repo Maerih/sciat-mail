@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Workspace;
 use App\Services\Quota;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class WorkspaceController extends Controller
 {
@@ -62,8 +63,8 @@ class WorkspaceController extends Controller
         unset($data['logo']);
         if ($request->user()->isAdmin()) {
             // limits are commercial terms: only administrators may change them
-            $limits = $request->validate(['monthly_email_limit' => 'nullable|integer|min:0', 'contact_limit' => 'nullable|integer|min:0']);
-            $workspace->forceFill(['monthly_email_limit' => $limits['monthly_email_limit'] ?? null, 'contact_limit' => $limits['contact_limit'] ?? null]);
+            $limits = $request->validate(['monthly_email_limit' => 'nullable|integer|min:0', 'contact_limit' => 'nullable|integer|min:0', 'monthly_sms_limit' => 'nullable|integer|min:0']);
+            $workspace->forceFill(['monthly_email_limit' => $limits['monthly_email_limit'] ?? null, 'contact_limit' => $limits['contact_limit'] ?? null, 'monthly_sms_limit' => $limits['monthly_sms_limit'] ?? null]);
         }
         $workspace->update($data);
 
@@ -87,6 +88,7 @@ class WorkspaceController extends Controller
             'company' => 'nullable|string|max:190',
             'address' => 'nullable|string|max:255',
             'contact_email' => 'nullable|email',
+            'sms_country' => ['nullable', Rule::in(array_keys(config('calling_codes')))],
         ]);
     }
 }

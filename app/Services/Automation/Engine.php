@@ -10,8 +10,12 @@ use App\Models\Blacklist;
 use App\Models\Delivery;
 use App\Models\MailList;
 use App\Models\Segment;
+use App\Models\SmsProvider;
 use App\Models\Subscriber;
+use App\Services\Quota;
 use App\Services\RssFeed;
+use App\Sms\SmsService;
+use App\Sms\SmsText;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -116,6 +120,11 @@ class Engine
                 case 'send':
                     $this->send($run, $step);
                     $run->record($run->step_id, 'Email queued');
+                    $run->step_id = $step['next'] ?? null;
+                    break;
+
+                case 'sms':
+                    $run->record($run->step_id, $this->sendSms($run, $step));
                     $run->step_id = $step['next'] ?? null;
                     break;
 
@@ -342,6 +351,28 @@ class Engine
         if ($delivery->wasRecentlyCreated) {
             SendAutomationEmail::dispatch($delivery->id)->afterCommit();
         }
+    }
+
+    /** Email-to-SMS: texts the contact if they have a number and haven't opted out of SMS. */
+    protected function sendSms(AutomationRun $run, array $step): string
+    {
+        $subscriber = $run->subscriber;
+        if (! $subscriber->phone || $subscriber->sms_opted_out_at) {
+            return 'SMS skipped — '.($subscriber->phone ? 'opted out of SMS' : 'no phone number');
+        }
+        $workspace = $run->automation->workspace;
+        if (Quota::smsRemaining($workspace) === 0) {
+            return 'SMS skipped — monthly SMS limit reached';
+        }
+        $provider = SmsProvider::availableTo($workspace)->where('status', 'active')->find($step['provider_id'] ?? 0)
+            ?? SmsProvider::defaultFor($workspace);
+        $body = SmsText::render((string) ($step['message'] ?? ''), $subscriber);
+        if (! $provider || $body === '') {
+            return 'SMS skipped — '.($provider ? 'empty message' : 'no SMS provider');
+        }
+        app(SmsService::class)->queue($workspace, $subscriber->phone, $body, 'automation', $subscriber, $provider, $step['sender'] ?? null);
+
+        return 'SMS queued';
     }
 
     protected function act(Subscriber $subscriber, array $step): void

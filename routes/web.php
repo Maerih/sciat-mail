@@ -35,6 +35,8 @@ if (! file_exists(public_path('storage'))) {
     })->where('path', '.*')->name('storage.fallback');
 }
 
+Route::match(['get', 'post'], '/webhooks/sms/{provider}/{secret}/{kind}', Pub\SmsWebhookController::class)
+    ->whereIn('kind', ['status', 'inbound'])->middleware('throttle:600,1')->name('webhooks.sms');
 Route::post('/webhooks/ses/{server}/{secret}', [Pub\WebhookController::class, 'ses'])->name('webhooks.ses');
 Route::post('/webhooks/sendgrid/{server}/{secret}', [Pub\WebhookController::class, 'sendgrid'])->name('webhooks.sendgrid');
 Route::post('/webhooks/mailgun/{server}/{secret}', [Pub\WebhookController::class, 'mailgun'])->name('webhooks.mailgun');
@@ -159,6 +161,24 @@ Route::middleware(['auth', 'team'])->group(function () {
         });
 
         Route::resource('forms', Controllers\FormController::class)->except(['show']);
+
+        // SMS
+        Route::prefix('sms')->name('sms.')->group(function () {
+            Route::get('campaigns', [Controllers\SmsCampaignController::class, 'index'])->name('campaigns.index');
+            Route::post('campaigns', [Controllers\SmsCampaignController::class, 'store'])->name('campaigns.store');
+            Route::get('campaigns/{campaign}', [Controllers\SmsCampaignController::class, 'show'])->name('campaigns.show');
+            Route::get('campaigns/{campaign}/edit', [Controllers\SmsCampaignController::class, 'edit'])->name('campaigns.edit');
+            Route::put('campaigns/{campaign}', [Controllers\SmsCampaignController::class, 'update'])->name('campaigns.update');
+            Route::delete('campaigns/{campaign}', [Controllers\SmsCampaignController::class, 'destroy'])->name('campaigns.destroy');
+            foreach (['launch', 'pause', 'resume', 'cancel'] as $action) {
+                Route::post("campaigns/{campaign}/{$action}", [Controllers\SmsCampaignController::class, $action])->name("campaigns.{$action}");
+            }
+            Route::get('inbox', [Controllers\SmsInboxController::class, 'index'])->name('inbox');
+            Route::post('inbox', [Controllers\SmsInboxController::class, 'reply'])->middleware('throttle:60,1')->name('inbox.reply');
+            Route::post('providers/{provider}/test', [Controllers\SmsProviderController::class, 'test'])->middleware('throttle:10,1')->name('providers.test');
+            Route::post('providers/{provider}/default', [Controllers\SmsProviderController::class, 'makeDefault'])->name('providers.default');
+            Route::resource('providers', Controllers\SmsProviderController::class)->except(['show']);
+        });
 
         // Websites
         Route::resource('websites', Controllers\WebsiteController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);

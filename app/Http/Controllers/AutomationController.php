@@ -6,6 +6,7 @@ use App\Models\Automation;
 use App\Models\Campaign;
 use App\Models\MailList;
 use App\Models\Segment;
+use App\Models\SmsProvider;
 use App\Models\Template;
 use App\Models\Workspace;
 use App\Sending\MergeTags;
@@ -153,6 +154,7 @@ class AutomationController extends Controller
             'wait' => ['type' => 'wait', 'amount' => 1, 'unit' => 'days'],
             'condition' => ['type' => 'condition', 'rule' => ['kind' => 'opened', 'step' => '']],
             'action' => ['type' => 'action', 'action' => 'add_tag', 'tag' => ''],
+            'sms' => ['type' => 'sms', 'message' => '', 'provider_id' => null, 'sender' => null],
             'send' => ['type' => 'send', 'campaign_id' => $this->newEmail($automation)->id],
         };
         $id = $flow->insert($data['parent'], $data['branch'], $step);
@@ -179,6 +181,7 @@ class AutomationController extends Controller
             'emails' => $automation->emails()->get()->keyBy('id'),
             'lists' => MailList::forWorkspace()->whereKeyNot($automation->mail_list_id)->orderBy('name')->get(),
             'operators' => Segment::OPERATORS['text'],
+            'smsProviders' => SmsProvider::availableTo($automation->workspace)->where('status', 'active')->orderBy('name')->get(),
         ]);
     }
 
@@ -200,6 +203,11 @@ class AutomationController extends Controller
                 'operator' => ['nullable', Rule::in(array_keys(Segment::OPERATORS['text']))],
                 'value' => 'nullable|string|max:255',
             ])],
+            'sms' => $request->validate([
+                'message' => 'required|string|max:1600',
+                'provider_id' => ['nullable', 'integer'],
+                'sender' => 'nullable|string|max:32',
+            ]),
             'action' => $request->validate([
                 'action' => ['required', Rule::in(array_keys(Flow::ACTIONS))],
                 'tag' => 'required_if:action,add_tag,remove_tag|nullable|string|max:100',
