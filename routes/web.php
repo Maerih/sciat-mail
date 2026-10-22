@@ -161,6 +161,9 @@ Route::middleware(['auth', 'team'])->group(function () {
 
             Route::get('report/{log}', [Controllers\CampaignReportController::class, 'log'])
                 ->whereIn('log', ['deliveries', 'opens', 'clicks', 'bounces', 'complaints', 'unsubscribes'])->name('log');
+            Route::get('links', [Controllers\CampaignReportController::class, 'links'])->name('links');
+            Route::get('map', [Controllers\CampaignReportController::class, 'map'])->name('map');
+            Route::get('review', [Controllers\CampaignReportController::class, 'review'])->name('review');
             Route::get('report-chart', [Controllers\CampaignReportController::class, 'chart'])->name('chart');
             Route::post('winner', [Controllers\CampaignController::class, 'winner'])->name('winner');
             Route::post('pause', [Controllers\CampaignController::class, 'pause'])->name('pause');

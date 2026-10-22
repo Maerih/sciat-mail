@@ -14,6 +14,7 @@ use App\Sending\MessageBuilder;
 use App\Sending\SendFailed;
 use App\Sending\ServerPicker;
 use App\Services\CampaignService;
+use App\Services\ContentReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -284,6 +285,7 @@ class CampaignWizardController extends Controller
         return $this->step($campaign, 'confirm', [
             'checks' => $service->preflight($campaign),
             'canLaunch' => $service->canLaunch($campaign),
+            'contentScore' => ContentReview::score(app(ContentReview::class)->review($campaign)),
         ]);
     }
 

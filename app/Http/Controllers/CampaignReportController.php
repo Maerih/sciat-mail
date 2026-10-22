@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Campaign;
+use App\Services\ContentReview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -34,6 +35,36 @@ class CampaignReportController extends Controller
         }
 
         return view('campaigns.log', ['campaign' => $campaign, 'log' => $log, 'rows' => $rows, 'logs' => self::LOGS]);
+    }
+
+    public function links(Campaign $campaign): View
+    {
+        $links = $campaign->events()->toBase()->where('type', 'click')
+            ->selectRaw('url, count(*) as clicks, count(distinct delivery_id) as unique_clicks, max(created_at) as last_click')
+            ->groupBy('url')->orderByDesc('clicks')->get();
+
+        return view('campaigns.links', ['campaign' => $campaign, 'links' => $links, 'delivered' => $campaign->stats()['delivered']]);
+    }
+
+    public function map(Campaign $campaign): View
+    {
+        $rows = $campaign->events()->toBase()->whereIn('type', ['open', 'click'])->whereNotNull('country')
+            ->selectRaw("country, count(distinct case when type = 'open' then delivery_id end) as opens, count(distinct case when type = 'click' then delivery_id end) as clicks")
+            ->groupBy('country')->orderByDesc('opens')->get();
+        $names = config('countries');
+
+        return view('campaigns.map', [
+            'campaign' => $campaign,
+            'countries' => $rows->map(fn ($r) => (object) ['code' => $r->country, 'name' => $names[$r->country] ?? $r->country, 'opens' => (int) $r->opens, 'clicks' => (int) $r->clicks]),
+            'unknown' => $campaign->events()->whereIn('type', ['open', 'click'])->whereNull('country')->distinct()->count('delivery_id'),
+        ]);
+    }
+
+    public function review(Request $request, Campaign $campaign, ContentReview $reviewer): View
+    {
+        $checks = $reviewer->review($campaign, $request->boolean('links'));
+
+        return view('campaigns.review', ['campaign' => $campaign, 'checks' => $checks, 'score' => ContentReview::score($checks), 'checkedLinks' => $request->boolean('links')]);
     }
 
     /** Opens & clicks per hour (first 3 days) or per day for the selected range. */

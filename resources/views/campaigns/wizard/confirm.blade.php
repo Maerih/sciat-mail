@@ -49,6 +49,12 @@
                 <button class="btn-primary w-full" @disabled(! $canLaunch)><x-icon name="paper-airplane" /> {{ $campaign->scheduled_at?->isFuture() ? 'Schedule' : 'Launch now' }}</button>
                 @unless ($canLaunch)<p class="text-xs text-red-600">Resolve the items marked in red first.</p>@endunless
             </form>
+            <a href="{{ route('campaigns.review', $campaign) }}" class="card card-body flex items-center gap-4 hover:bg-[var(--surface-2)]">
+                <span @class(['flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-bold',
+                    'bg-emerald-50 text-emerald-600' => $contentScore >= 85, 'bg-amber-50 text-amber-600' => $contentScore >= 60 && $contentScore < 85, 'bg-red-50 text-red-600' => $contentScore < 60])>{{ $contentScore }}</span>
+                <span class="min-w-0 flex-1"><span class="block text-sm font-semibold">Content score</span><span class="block text-xs text-[var(--muted)]">Spam words, links, images and size — see the full review</span></span>
+                <x-icon name="arrow_forward" class="size-4.5 text-[var(--muted)]" />
+            </a>
             <form method="POST" action="{{ route('campaigns.test', $campaign) }}" class="card card-body space-y-3">
                 @csrf
                 <h2 class="card-title">Send a test email</h2>
