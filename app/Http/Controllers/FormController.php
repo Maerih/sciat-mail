@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\MailList;
+use App\Models\Website;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,7 @@ class FormController extends Controller
 {
     public function index(): View
     {
-        $forms = Form::with('list:id,uid,name')
+        $forms = Form::with('list:id,uid,name', 'website:id,uid,name')
             ->whereHas('list', fn ($q) => $q->forWorkspace())
             ->latest()->paginate(20);
 
@@ -27,6 +28,8 @@ class FormController extends Controller
                 'consent_text' => 'I agree to receive emails and accept the privacy policy.']),
             'lists' => MailList::forWorkspace()->orderBy('name')->get(),
             'selectedList' => $request->query('list'),
+            'websites' => Website::forWorkspace()->orderBy('name')->get(),
+            'selectedWebsite' => $request->query('website'),
         ]);
     }
 
@@ -34,14 +37,17 @@ class FormController extends Controller
     {
         $data = $this->validated($request);
         $list = MailList::forWorkspace()->where('uid', $data['list'])->firstOrFail();
-        $form = $list->forms()->create($data);
+        $form = $list->forms()->make($data);
+        $form->website_id = $this->websiteId($request);
+        $form->save();
 
         return redirect()->route('forms.embed', $form)->with('success', 'Form created. Copy the embed code below.');
     }
 
     public function edit(Form $form): View
     {
-        return view('forms.form', ['form' => $form, 'lists' => MailList::forWorkspace()->orderBy('name')->get(), 'selectedList' => $form->list->uid]);
+        return view('forms.form', ['form' => $form, 'lists' => MailList::forWorkspace()->orderBy('name')->get(), 'selectedList' => $form->list->uid,
+            'websites' => Website::forWorkspace()->orderBy('name')->get(), 'selectedWebsite' => null]);
     }
 
     public function update(Request $request, Form $form): RedirectResponse
@@ -49,6 +55,7 @@ class FormController extends Controller
         $data = $this->validated($request);
         $list = MailList::forWorkspace()->where('uid', $data['list'])->firstOrFail();
         $form->mail_list_id = $list->id;
+        $form->website_id = $this->websiteId($request);
         $form->update($data);
 
         return redirect()->route('forms.embed', $form)->with('success', 'Form saved.');
@@ -69,6 +76,11 @@ class FormController extends Controller
             'form' => $form,
             'code' => view('public.partials.form-embed', ['form' => $form])->render(),
         ]);
+    }
+
+    protected function websiteId(Request $request): ?int
+    {
+        return $request->filled('website') ? Website::forWorkspace()->where('uid', $request->input('website'))->firstOrFail()->id : null;
     }
 
     /** @return array<string, mixed> */

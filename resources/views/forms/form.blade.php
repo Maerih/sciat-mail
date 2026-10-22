@@ -44,6 +44,16 @@
                     @foreach ($lists as $list)<option value="{{ $list->uid }}" @selected(old('list', $selectedList) === $list->uid)>{{ $list->name }}{{ $list->double_optin ? ' (double opt-in)' : '' }}</option>@endforeach
                 </select>
             </div>
+            @if ($websites->isNotEmpty())
+                <div>
+                    <label class="label">Website</label>
+                    <select name="website" class="input">
+                        <option value="">Not connected — embed the code manually</option>
+                        @foreach ($websites as $site)<option value="{{ $site->uid }}" @selected(old('website', $form->website?->uid ?? $selectedWebsite) === $site->uid)>{{ $site->name }} ({{ $site->host }})</option>@endforeach
+                    </select>
+                    <p class="help">Connected forms load through the website's tracking code — popups show automatically.</p>
+                </div>
+            @endif
             <div class="grid gap-4 sm:grid-cols-2">
                 <x-field name="title" label="Form heading" :value="$form->title" />
                 <x-field name="button_text" label="Button text" :value="$form->button_text" required />

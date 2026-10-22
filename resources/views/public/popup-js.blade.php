@@ -15,8 +15,9 @@
 
     var shown = false;
     function show() {
-        if (shown) { return; }
+        if (shown || window.__smPopupOpen) { return; }
         shown = true;
+        window.__smPopupOpen = true;
         try { localStorage.setItem(key, String(Date.now())); } catch (e) {}
 
         var bar = cfg.position === 'top-bar' || cfg.position === 'bottom-bar';
@@ -41,7 +42,7 @@
         if (cfg.description && !bar) { root.querySelector('.sm-desc').textContent = cfg.description; }
         document.body.appendChild(root);
 
-        function close() { root.remove(); }
+        function close() { root.remove(); window.__smPopupOpen = false; }
         root.querySelector('.sm-close').addEventListener('click', close);
         var overlay = root.querySelector('.sm-overlay');
         if (overlay) { overlay.addEventListener('click', close); }

@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'client' => EnsureClient::class,
         ]);
         // Hit by subscribers' mail clients, embedded forms on client sites and ESP webhooks
-        $middleware->preventRequestForgery(except: ['subscribe/*', 'webhooks/*', 'u/*']);
+        $middleware->preventRequestForgery(except: ['subscribe/*', 'webhooks/*', 'u/*', 'site/*']);
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->trustProxies(at: '*');
     })

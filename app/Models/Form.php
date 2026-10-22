@@ -54,6 +54,11 @@ class Form extends Model
         return $value ?? self::POPUP_DEFAULTS[$key];
     }
 
+    public function website(): BelongsTo
+    {
+        return $this->belongsTo(Website::class);
+    }
+
     public function list(): BelongsTo
     {
         return $this->belongsTo(MailList::class, 'mail_list_id');

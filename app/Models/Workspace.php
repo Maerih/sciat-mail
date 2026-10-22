@@ -54,6 +54,11 @@ class Workspace extends Model
         return $this->hasMany(Campaign::class)->whereNull('automation_id');
     }
 
+    public function websites(): HasMany
+    {
+        return $this->hasMany(Website::class);
+    }
+
     public function sendingDomains(): HasMany
     {
         return $this->hasMany(SendingDomain::class);

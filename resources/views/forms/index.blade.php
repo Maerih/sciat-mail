@@ -5,7 +5,7 @@
     <x-hero icon="web" title="Capture new subscribers" text="Embedded and popup forms add contacts to your lists automatically."
         :stats="[['web', $forms->total(), 'forms'], ['check_circle', $forms->where('status', 'published')->count(), 'published']]"
         :actions="[['edit_note', 'Create a signup form', 'Design a form that captures emails and subscriber data.', route('forms.create')],
-                   ['code', 'Embed on page', 'Add a small code snippet to your site and your form goes live.', route('forms.index')],
+                   ['language', 'Connect to website', 'Link your form to a website to start collecting subscribers.', route('websites.index')],
                    ['open_in_new', 'Popup forms', 'Show a modal, slide-in or bar on the client\'s website.', route('forms.create')]]" />
     <div class="card">
         @if ($forms->isEmpty())
@@ -15,12 +15,13 @@
         @else
             <div class="overflow-x-auto">
                 <table class="table">
-                    <thead><tr><th>Form</th><th>List</th><th>Status</th><th>Submissions</th><th></th></tr></thead>
+                    <thead><tr><th>Form</th><th>List</th><th>Website</th><th>Status</th><th>Submissions</th><th></th></tr></thead>
                     <tbody>
                         @foreach ($forms as $form)
                             <tr>
                                 <td><a href="{{ route('forms.edit', $form) }}" class="font-medium text-gray-900 hover:text-brand-600">{{ $form->name }}</a></td>
                                 <td>{{ $form->list->name }} <span class="badge-gray ml-1">{{ $form->isPopup() ? 'Popup' : 'Embedded' }}</span></td>
+                                <td>@if ($form->website)<a href="{{ route('websites.show', $form->website) }}" class="inline-flex items-center gap-1 text-sm hover:text-brand-600"><x-icon name="language" class="size-4" /> {{ $form->website->name }}</a>@else<span class="inline-flex items-center gap-1 text-xs text-[var(--muted)]"><x-icon name="link_off" class="size-4" /> Not connected</span>@endif</td>
                                 <td><x-status-badge :status="$form->status" /></td>
                                 <td class="tabular-nums">{{ number_format($form->submissions) }}</td>
                                 <td class="text-right whitespace-nowrap">

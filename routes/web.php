@@ -22,6 +22,9 @@ Route::get('/subscribe/{form}', [Pub\SubscribeController::class, 'show'])->name(
 Route::get('/forms/{form}/popup.js', [Pub\SubscribeController::class, 'popupScript'])->name('subscribe.popup');
 Route::post('/subscribe/{form}', [Pub\SubscribeController::class, 'store'])->middleware('throttle:20,1')->name('subscribe.store');
 
+Route::get('/site/{uid}/connect.js', [Pub\SiteController::class, 'script'])->name('site.script');
+Route::post('/site/{uid}/collect', [Pub\SiteController::class, 'collect'])->middleware('throttle:120,1')->name('site.collect');
+
 Route::post('/webhooks/ses/{server}/{secret}', [Pub\WebhookController::class, 'ses'])->name('webhooks.ses');
 Route::post('/webhooks/sendgrid/{server}/{secret}', [Pub\WebhookController::class, 'sendgrid'])->name('webhooks.sendgrid');
 Route::post('/webhooks/mailgun/{server}/{secret}', [Pub\WebhookController::class, 'mailgun'])->name('webhooks.mailgun');
@@ -130,6 +133,12 @@ Route::middleware(['auth', 'team'])->group(function () {
         });
 
         Route::resource('forms', Controllers\FormController::class)->except(['show']);
+
+        // Websites
+        Route::resource('websites', Controllers\WebsiteController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
+        Route::post('websites/{website}/verify', [Controllers\WebsiteController::class, 'verify'])->name('websites.verify');
+        Route::post('websites/{website}/forms', [Controllers\WebsiteController::class, 'connectForm'])->name('websites.forms.connect');
+        Route::delete('websites/{website}/forms/{form}', [Controllers\WebsiteController::class, 'disconnectForm'])->name('websites.forms.disconnect');
         Route::get('forms/{form}/embed', [Controllers\FormController::class, 'embed'])->name('forms.embed');
 
         // Campaigns

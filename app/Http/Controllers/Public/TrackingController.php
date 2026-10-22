@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
+use App\Models\Website;
 use App\Sending\MergeTags;
 use App\Sending\MessageBuilder;
 use App\Sending\TrackingUrls;
@@ -39,9 +40,28 @@ class TrackingController extends Controller
 
         if ($delivery = Delivery::where('uid', $uid)->first()) {
             $events->click($delivery, $url, $request->ip(), $request->userAgent());
+            $url = $this->identifyForWebsite($delivery, $url, $urls);
         }
 
         return redirect()->away($url);
+    }
+
+    /** Links to the client's own connected website carry a signed id so the visit is tied to the contact. */
+    protected function identifyForWebsite(Delivery $delivery, string $url, TrackingUrls $urls): string
+    {
+        if (! $delivery->subscriber_id) {
+            return $url;
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+        $tracked = Website::where('workspace_id', $delivery->workspace_id)->where('track_visits', true)->get()
+            ->contains(fn (Website $website) => $website->matchesHost($host));
+        if (! $tracked) {
+            return $url;
+        }
+        $id = $delivery->uid.'.'.$urls->sign('site|'.$delivery->uid);
+        [$base, $fragment] = array_pad(explode('#', $url, 2), 2, null);
+
+        return $base.(str_contains($base, '?') ? '&' : '?').'_sm='.$id.($fragment !== null ? '#'.$fragment : '');
     }
 
     public function webView(string $uid, string $sig, TrackingUrls $urls, MessageBuilder $builder): Response
