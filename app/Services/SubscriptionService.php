@@ -14,12 +14,17 @@ class SubscriptionService
      * blacklisted address. Returns the subscriber and whether confirmation is pending.
      *
      * @return array{0: Subscriber, 1: bool}
+     *
+     * @throws QuotaExceeded when a new contact would exceed the client's contact limit
      */
     public function subscribe(MailList $list, string $email, array $data = [], string $source = 'form', ?string $ip = null,
         bool $forceConfirmed = false, array $tags = []): array
     {
         $email = strtolower(trim($email));
         $subscriber = $list->subscribers()->firstOrNew(['email' => $email]);
+        if (! $subscriber->exists && ! Quota::canAddContacts($list->workspace)) {
+            throw new QuotaExceeded(Quota::contactLimitMessage($list->workspace));
+        }
         $wasSubscribed = $subscriber->exists && $subscriber->status === 'subscribed';
 
         $subscriber->data = array_merge($subscriber->data ?? [], array_filter($data, fn ($v) => $v !== null && $v !== ''));

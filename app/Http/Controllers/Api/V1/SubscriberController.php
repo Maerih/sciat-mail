@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SubscriberResource;
 use App\Models\MailList;
 use App\Models\Subscriber;
+use App\Services\QuotaExceeded;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,8 +43,12 @@ class SubscriberController extends Controller
         $data = $this->validateContact($request, $list);
         $existed = $list->subscribers()->where('email', strtolower($data['email']))->exists();
 
-        [$subscriber, $pending] = $subscriptions->subscribe($list, $data['email'], $data['fields'] ?? [], 'api', $request->ip(),
-            (bool) ($data['confirmed'] ?? false), $data['tags'] ?? []);
+        try {
+            [$subscriber, $pending] = $subscriptions->subscribe($list, $data['email'], $data['fields'] ?? [], 'api', $request->ip(),
+                (bool) ($data['confirmed'] ?? false), $data['tags'] ?? []);
+        } catch (QuotaExceeded $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return (new SubscriberResource($subscriber->fresh()))->additional(['confirmation_sent' => $pending])
             ->response()->setStatusCode($existed ? 200 : 201);
@@ -63,8 +68,14 @@ class SubscriberController extends Controller
                 continue;
             }
             $existed = $list->subscribers()->where('email', $email)->exists();
-            $subscriptions->subscribe($list, $email, $this->cleanFields($list, (array) ($row['fields'] ?? [])), 'api', $request->ip(),
-                $request->boolean('confirmed'), array_filter((array) ($row['tags'] ?? []), 'is_string'));
+            try {
+                $subscriptions->subscribe($list, $email, $this->cleanFields($list, (array) ($row['fields'] ?? [])), 'api', $request->ip(),
+                    $request->boolean('confirmed'), array_filter((array) ($row['tags'] ?? []), 'is_string'));
+            } catch (QuotaExceeded $e) {
+                $results['failed'][] = ['index' => $index, 'email' => $email, 'error' => $e->getMessage()];
+
+                continue;
+            }
             $results[$existed ? 'updated' : 'created']++;
         }
 

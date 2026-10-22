@@ -8,6 +8,7 @@ use App\Sending\Dispatcher;
 use App\Sending\MessageBuilder;
 use App\Sending\SendFailed;
 use App\Sending\ServerPicker;
+use App\Services\Quota;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -49,11 +50,19 @@ class SendCampaignBatch implements ShouldQueue
             return;
         }
 
+        $remaining = Quota::emailsRemaining($campaign->workspace);
+
         $deliveries = Delivery::with('subscriber.list.fields', 'workspace', 'campaign')
             ->whereIn('id', $this->deliveryIds)->where('status', 'pending')->orderBy('id')->get();
 
         foreach ($deliveries as $index => $delivery) {
             if ($index % 25 === 0 && $index > 0 && ! in_array(Campaign::whereKey($campaign->id)->value('status'), ['sending', 'testing'], true)) {
+                return;
+            }
+
+            if ($remaining !== null && $remaining <= 0) {
+                $campaign->forceFill(['status' => 'paused', 'last_error' => 'The client\'s monthly email limit was reached. Raise the limit or resume next month.'])->save();
+
                 return;
             }
 
@@ -78,6 +87,9 @@ class SendCampaignBatch implements ShouldQueue
                 $message = $builder->forCampaign($version, $delivery, $delivery->subscriber, $server);
                 $messageId = $dispatcher->send($message, $server, $campaign->from_email, $delivery->email);
                 $delivery->forceFill(['status' => 'sent', 'sent_at' => now(), 'provider_message_id' => $messageId, 'error' => null])->save();
+                if ($remaining !== null) {
+                    $remaining--;
+                }
             } catch (SendFailed $e) {
                 $retry = $e->transient && $delivery->attempts < self::MAX_ATTEMPTS;
                 $delivery->forceFill(['status' => $retry ? 'pending' : 'failed', 'error' => mb_substr($e->getMessage(), 0, 1000)])->save();

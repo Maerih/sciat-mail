@@ -7,6 +7,7 @@ use App\Sending\Dispatcher;
 use App\Sending\MessageBuilder;
 use App\Sending\SendFailed;
 use App\Sending\ServerPicker;
+use App\Services\Quota;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -34,6 +35,11 @@ class SendAutomationEmail implements ShouldQueue
         }
 
         $campaign = $delivery->campaign;
+        if (Quota::emailsRemaining($delivery->workspace) === 0) {
+            $delivery->forceFill(['status' => 'failed', 'error' => 'Monthly email limit reached.'])->save();
+
+            return;
+        }
         $pool = $picker->forCampaign($campaign);
         $server = $picker->pick($pool);
         if (! $server) {

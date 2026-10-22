@@ -8,6 +8,7 @@ use App\Models\Template;
 use App\Models\Workspace;
 use App\Sending\MergeTags;
 use App\Sending\SendFailed;
+use App\Services\Quota;
 use App\Services\SystemMailer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,10 @@ class SendController extends Controller
             'from_name' => 'nullable|string|max:190',
         ]);
         $workspace = Workspace::current();
+
+        if (Quota::emailsRemaining($workspace) === 0) {
+            return response()->json(['message' => 'The monthly email limit for this client has been reached.'], 429);
+        }
 
         if (Blacklist::isBlocked($data['to'], $workspace->id)) {
             return response()->json(['message' => 'The recipient is on the blacklist.'], 422);

@@ -8,6 +8,7 @@ use App\Models\DeliveryEvent;
 use App\Models\MailList;
 use App\Models\Subscriber;
 use App\Models\Workspace;
+use App\Services\Quota;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -58,6 +59,7 @@ class DashboardController extends Controller
                 'opens' => $labels->map(fn ($d) => (int) ($dailyOpens[$d] ?? 0))->all(),
             ],
             'recentCampaigns' => Campaign::forWorkspace()->regular()->latest()->limit(6)->get(),
+            'quota' => Quota::summary($workspace),
             'serverCount' => $workspace->availableServers()->where('status', 'active')->count(),
             'verifiedDomains' => $workspace->sendingDomains()->where('ownership_verified', true)->where('dkim_verified', true)->count(),
         ]);

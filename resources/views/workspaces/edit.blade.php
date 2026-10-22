@@ -20,6 +20,16 @@
                 <x-field name="website" type="url" label="Website" :value="$workspace->website" placeholder="https://client.com" class="sm:col-span-2" />
             </div>
         </div>
+        @if (auth()->user()->isAdmin())
+            <div class="border-t border-gray-100 pt-5">
+                <h2 class="card-title">Limits</h2>
+                <p class="text-sm text-gray-500">Leave empty for unlimited. Campaigns pause when the monthly email limit is reached; new contacts are refused at the contact limit.</p>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <x-field name="monthly_email_limit" type="number" min="0" label="Emails per month" :value="$workspace->monthly_email_limit" />
+                    <x-field name="contact_limit" type="number" min="0" label="Contacts" :value="$workspace->contact_limit" />
+                </div>
+            </div>
+        @endif
         <div class="flex justify-end"><button class="btn-primary">Save settings</button></div>
     </form>
 

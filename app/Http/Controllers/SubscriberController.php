@@ -9,6 +9,8 @@ use App\Models\MailList;
 use App\Models\Segment;
 use App\Models\Subscriber;
 use App\Models\VerificationServer;
+use App\Services\Quota;
+use App\Services\QuotaExceeded;
 use App\Services\SubscriptionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -65,8 +67,12 @@ class SubscriberController extends Controller
             'skip_confirmation' => 'boolean',
         ]);
 
-        [$subscriber, $pending] = $subscriptions->subscribe($list, $data['EMAIL'], $this->fieldValues($list, $data), 'manual',
-            $request->ip(), $request->boolean('skip_confirmation'), $this->parseTags($data['tags'] ?? ''));
+        try {
+            [$subscriber, $pending] = $subscriptions->subscribe($list, $data['EMAIL'], $this->fieldValues($list, $data), 'manual',
+                $request->ip(), $request->boolean('skip_confirmation'), $this->parseTags($data['tags'] ?? ''));
+        } catch (QuotaExceeded $e) {
+            return back()->withInput()->withErrors(['EMAIL' => $e->getMessage()]);
+        }
 
         return redirect()->route('lists.subscribers.index', $list)->with('success', $pending
             ? "{$subscriber->email} added — a confirmation email has been sent."
@@ -215,6 +221,9 @@ class SubscriberController extends Controller
     {
         $copy = $target->subscribers()->firstOrNew(['email' => $subscriber->email]);
         if (! $copy->exists) {
+            if (! $move && ! Quota::canAddContacts($target->workspace)) {
+                return; // copies count against the contact limit; moves don't change the total
+            }
             $copy->fill($subscriber->only(['status', 'data', 'tags', 'ip', 'confirmed_at', 'unsubscribed_at']) + ['source' => 'copy']);
             $copy->save();
         }

@@ -29,6 +29,13 @@ class CampaignService
             ? $add('recipients', 'Recipients', 'ok', number_format($recipients).' subscribers will receive this campaign', 'recipients')
             : $add('recipients', 'Recipients', 'error', 'No subscribed recipients match the selected lists/segments', 'recipients');
 
+        $remaining = Quota::emailsRemaining($campaign->workspace);
+        if ($remaining !== null && $recipients > 0) {
+            $recipients > $remaining
+                ? $add('quota', 'Monthly email limit', 'error', number_format($recipients).' recipients but only '.number_format($remaining).' emails left this month', null)
+                : $add('quota', 'Monthly email limit', 'ok', number_format($remaining - $recipients).' emails left this month after this send', null);
+        }
+
         filled($campaign->subject)
             ? $add('subject', 'Subject line', 'ok', '“'.$campaign->subject.'”', 'setup')
             : $add('subject', 'Subject line', 'error', 'Add a subject line', 'setup');

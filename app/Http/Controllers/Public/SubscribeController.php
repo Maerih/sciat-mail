@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Form;
 use App\Models\Subscriber;
 use App\Sending\TrackingUrls;
+use App\Services\QuotaExceeded;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -56,7 +57,16 @@ class SubscribeController extends Controller
 
         $data = $validator->validated();
         $values = collect($data)->except(['EMAIL', 'consent'])->all();
-        [, $pending] = $subscriptions->subscribe($list, $data['EMAIL'], $values, 'form', $request->ip());
+        try {
+            [, $pending] = $subscriptions->subscribe($list, $data['EMAIL'], $values, 'form', $request->ip());
+        } catch (QuotaExceeded) {
+            $message = 'Sorry, this list is not accepting new subscribers right now.';
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => false, 'errors' => ['EMAIL' => [$message]]], 422)->withHeaders(self::CORS);
+            }
+
+            return redirect()->route('subscribe.show', $form->uid)->withErrors(['EMAIL' => $message])->withInput();
+        }
         DB::table('forms')->where('id', $form->id)->increment('submissions');
 
         return $this->success($request, $form, $pending);

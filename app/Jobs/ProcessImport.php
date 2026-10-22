@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Blacklist;
 use App\Models\Import;
 use App\Models\Subscriber;
+use App\Services\Quota;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -28,11 +29,13 @@ class ProcessImport implements ShouldQueue
 
     public const MAX_ERRORS = 200;
 
+    protected bool $limitReached = false;
+
     public function __construct(public int $importId) {}
 
     public function handle(): void
     {
-        $import = Import::with('list.fields')->find($this->importId);
+        $import = Import::with('list.fields', 'list.workspace')->find($this->importId);
         if (! $import || $import->status !== 'queued') {
             return;
         }
@@ -88,6 +91,9 @@ class ProcessImport implements ShouldQueue
             $this->flush($import, $chunk);
         }
 
+        if ($this->limitReached) {
+            array_unshift($errors, 'The contact limit of '.number_format((int) $list->workspace->contact_limit).' was reached; remaining new contacts were not imported.');
+        }
         $import->forceFill(['status' => 'done', 'errors' => $errors, 'finished_at' => now()])->save();
         Storage::delete($import->path);
     }
@@ -105,6 +111,8 @@ class ProcessImport implements ShouldQueue
 
             $inserts = [];
             $now = now();
+            $room = $list->workspace->contact_limit === null ? PHP_INT_MAX
+                : max(0, $list->workspace->contact_limit - Quota::contactsUsed($list->workspace));
             foreach ($rows as $email => $row) {
                 if ($subscriber = $existing->get($email)) {
                     $subscriber->data = array_merge($subscriber->data ?? [], $row['data']);
@@ -115,6 +123,9 @@ class ProcessImport implements ShouldQueue
                         $subscriber->save();
                     }
                     $import->updated_count++;
+                } elseif (count($inserts) >= $room) {
+                    $import->failed_count++;
+                    $this->limitReached = true;
                 } else {
                     $inserts[] = [
                         'uid' => strtolower(Str::random(13)),

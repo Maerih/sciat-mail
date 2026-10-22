@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Workspace;
+use App\Services\Quota;
 use Illuminate\Http\Request;
 
 class WorkspaceController extends Controller
 {
     public function index()
     {
-        $workspaces = Workspace::withCount(['lists', 'campaigns'])->orderBy('name')->get();
+        $workspaces = Workspace::withCount(['lists', 'campaigns'])->orderBy('name')->get()
+            ->each(fn (Workspace $w) => $w->setAttribute('usage', Quota::summary($w)));
 
         return view('workspaces.index', compact('workspaces'));
     }
@@ -54,6 +56,11 @@ class WorkspaceController extends Controller
             $data['logo_path'] = null;
         }
         unset($data['logo']);
+        if ($request->user()->isAdmin()) {
+            // limits are commercial terms: only administrators may change them
+            $limits = $request->validate(['monthly_email_limit' => 'nullable|integer|min:0', 'contact_limit' => 'nullable|integer|min:0']);
+            $workspace->forceFill(['monthly_email_limit' => $limits['monthly_email_limit'] ?? null, 'contact_limit' => $limits['contact_limit'] ?? null]);
+        }
         $workspace->update($data);
 
         return back()->with('success', 'Client settings saved.');

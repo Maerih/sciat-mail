@@ -31,6 +31,17 @@
         </div>
     @endif
 
+    @php
+        $nearLimit = collect($quota)->filter(fn ($q) => $q['limit'] !== null && $q['used'] >= $q['limit'] * \App\Services\Quota::WARN_AT);
+    @endphp
+    @if ($nearLimit->isNotEmpty())
+        <div class="mb-6 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <x-icon name="warning" class="size-5" />
+            <span>This client is close to or over its {{ $nearLimit->keys()->map(fn ($k) => $k === 'emails' ? 'monthly email' : 'contact')->implode(' and ') }} limit.
+                @if (auth()->user()->isAdmin()) <a href="{{ route('workspaces.edit') }}" class="underline">Adjust limits</a>@endif</span>
+        </div>
+    @endif
+
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <x-stat label="Emails sent" :value="number_format($sent)" :hint="$campaignCount.' campaigns in total'" />
         <x-stat label="Open rate" :value="$openRate.'%'" />
@@ -46,6 +57,8 @@
         <div class="card">
             <div class="card-header"><h2 class="card-title">Deliverability health</h2></div>
             <div class="card-body space-y-4">
+                <x-quota-meter label="Emails this month" :used="$quota['emails']['used']" :limit="$quota['emails']['limit']" />
+                <x-quota-meter label="Contacts" :used="$quota['contacts']['used']" :limit="$quota['contacts']['limit']" class="border-b border-gray-100 pb-4" />
                 @foreach ([['Bounce rate', $bounceRate, \App\Http\Controllers\DashboardController::BOUNCE_WARNING], ['Complaint rate', $complaintRate, \App\Http\Controllers\DashboardController::COMPLAINT_WARNING]] as [$label, $value, $limit])
                     <div>
                         <div class="flex justify-between text-sm"><span class="text-gray-600">{{ $label }}</span><span @class(['font-semibold tabular-nums', 'text-red-600' => $value > $limit, 'text-gray-900' => $value <= $limit])>{{ $value }}%</span></div>
