@@ -10,6 +10,8 @@ use App\Services\Bounces\ImapMailbox;
 use App\Services\Bounces\Mailbox;
 use App\Services\Dns\DnsResolver;
 use App\Services\Dns\SystemDnsResolver;
+use App\Services\Inbox\ImapMailboxClient;
+use App\Services\Inbox\MailboxClient;
 use App\Services\SystemMailConfig;
 use App\Services\Warmup\ImapWarmupInbox;
 use App\Services\Warmup\WarmupInbox;
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(WarmupInbox::class, ImapWarmupInbox::class);
+        $this->app->bind(MailboxClient::class, ImapMailboxClient::class);
         $this->app->bind(DnsResolver::class, SystemDnsResolver::class);
         $this->app->bind(Mailbox::class, ImapMailbox::class);
         // One per worker process so SMTP connections are reused across messages

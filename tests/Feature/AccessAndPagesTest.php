@@ -221,7 +221,7 @@ class AccessAndPagesTest extends TestCase
             route('automations.index'), route('automations.create'), route('sending.warmup.index'), route('sending.warmup.create'),
             route('sending.verification.index'), route('sending.bounce-handlers.index'), route('campaigns.builder', $draft),
             route('audience.overview'), route('audience.subscribers'), route('audience.subscribers', ['q' => 'example', 'status' => 'subscribed', 'list' => $list->uid]),
-            route('websites.index'), route('websites.create'), route('integrations.index'), route('sending.email-warmup.index'),
+            route('websites.index'), route('websites.create'), route('integrations.index'), route('sending.email-warmup.index'), route('inbox.index'), route('inbox.mailboxes.index'),
             route('sms.campaigns.index'), route('sms.inbox'), route('sms.providers.index'),
         ];
         foreach (array_keys(SendingServer::TYPES) as $type) {

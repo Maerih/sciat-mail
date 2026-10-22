@@ -13,8 +13,10 @@
 <body class="min-h-screen font-sans text-[14px] antialiased" x-data="appShell()" @keydown.window.prevent.ctrl.k="openSearch()" @keydown.window.prevent.meta.k="openSearch()">
 @php
     $user = auth()->user();
+    $inboxUnread = \Illuminate\Support\Facades\Schema::hasTable('inbox_threads')
+        ? \App\Models\InboxThread::whereIn('inbox_mailbox_id', \App\Models\InboxMailbox::visibleTo($user)->select('id'))->where('status', 'open')->where('unread', '>', 0)->count() : 0;
     $nav = [
-        [null, [['Home', 'dashboard', 'home', 'dashboard']]],
+        [null, [['Home', 'dashboard', 'home', 'dashboard'], ['Team inbox', 'inbox.index', 'inbox', 'inbox.index', $inboxUnread]]],
         ['Campaigns', [
             ['Email', 'campaigns.index', 'mail', 'campaigns.*'],
             ['Automation', 'automations.index', 'account_tree', 'automations.*'],
@@ -53,6 +55,7 @@
         $nav[] = ['Administration', array_values(array_filter([
             ['Clients', 'workspaces.index', 'apartment', 'workspaces.index'],
             ['Team', 'team.index', 'groups', 'team.*'],
+            ['Mailboxes', 'inbox.mailboxes.index', 'alternate_email', 'inbox.mailboxes.*'],
             Route::has('settings.index') ? ['Settings', 'settings.index', 'settings', 'settings.*'] : ['Settings', 'platform.edit', 'settings', 'platform.*'],
         ]))];
     }
@@ -112,9 +115,11 @@
     <nav class="flex-1 overflow-y-auto px-3 pb-4">
         @foreach ($nav as [$section, $items])
             @if ($section)<div class="nav-section">{{ $section }}</div>@else<div class="h-3"></div>@endif
-            @foreach ($items as [$label, $route, $icon, $pattern])
+            @foreach ($items as $item)
+                @php [$label, $route, $icon, $pattern] = $item; $badge = $item[4] ?? 0; @endphp
                 <a href="{{ route($route) }}" @class(['nav-link', 'active' => request()->routeIs($pattern)])>
-                    <x-icon :name="$icon" class="size-5" /> {{ $label }}
+                    <x-icon :name="$icon" class="size-5" /> <span class="flex-1">{{ $label }}</span>
+                    @if ($badge)<span class="rounded-full bg-brand-500 px-1.5 text-[11px] leading-5 font-bold text-[var(--on-brand)]">{{ $badge > 99 ? '99+' : $badge }}</span>@endif
                 </a>
             @endforeach
         @endforeach

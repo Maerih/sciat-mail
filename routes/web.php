@@ -90,6 +90,8 @@ Route::middleware(['auth', 'team'])->group(function () {
     Route::middleware('admin')->group(function () {
         Route::get('/workspaces', [Controllers\WorkspaceController::class, 'index'])->name('workspaces.index');
         Route::get('/settings', [Controllers\SettingsController::class, 'index'])->name('settings.index');
+        Route::post('/inbox/mailboxes/{mailbox}/test', [Controllers\InboxMailboxController::class, 'test'])->middleware('throttle:10,1')->name('inbox.mailboxes.test');
+        Route::resource('/inbox/mailboxes', Controllers\InboxMailboxController::class)->only(['index', 'store', 'update', 'destroy'])->names('inbox.mailboxes');
         Route::put('/settings/general', [Controllers\SettingsController::class, 'updateGeneral'])->name('settings.general');
         Route::put('/settings/sending', [Controllers\SettingsController::class, 'updateSending'])->name('settings.sending');
         Route::put('/settings/mail', [Controllers\SettingsController::class, 'updateMail'])->name('settings.mail');
@@ -181,6 +183,14 @@ Route::middleware(['auth', 'team'])->group(function () {
         });
 
         Route::get('integrations', [Controllers\IntegrationController::class, 'index'])->name('integrations.index');
+
+        // Team inbox (company mailboxes)
+        Route::get('inbox', [Controllers\InboxController::class, 'index'])->name('inbox.index');
+        Route::post('inbox/compose', [Controllers\InboxController::class, 'compose'])->middleware('throttle:30,1')->name('inbox.compose');
+        Route::post('inbox/sync', [Controllers\InboxController::class, 'sync'])->middleware('throttle:6,1')->name('inbox.sync');
+        Route::post('inbox/threads/{thread}/reply', [Controllers\InboxController::class, 'reply'])->middleware('throttle:30,1')->name('inbox.reply');
+        Route::patch('inbox/threads/{thread}', [Controllers\InboxController::class, 'update'])->name('inbox.update');
+        Route::get('inbox/messages/{message}/attachments/{index}', [Controllers\InboxController::class, 'attachment'])->whereNumber('index')->name('inbox.attachment');
 
         // Websites
         Route::resource('websites', Controllers\WebsiteController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
