@@ -1,7 +1,12 @@
 <x-layouts.app title="Campaigns">
-    <x-page-header title="Campaigns" subtitle="Design, schedule and track email campaigns for this client.">
-        <x-slot:actions><a href="{{ route('campaigns.create') }}" class="btn-primary"><x-icon name="plus" /> New campaign</a></x-slot:actions>
+    <x-page-header title="Campaigns" subtitle="Create, manage, and track your email campaigns all in one place.">
+        <x-slot:actions><a href="{{ route('campaigns.create') }}" class="btn-primary"><x-icon name="add" /> Create campaign</a></x-slot:actions>
     </x-page-header>
+    <x-hero icon="forward_to_inbox" title="Reach your audience with email campaigns" text="Design beautiful emails, target the right people, and track your results — all in one place."
+        :stats="[['campaign', $statusCounts->sum(), 'campaigns'], ['schedule', $statusCounts['scheduled'] ?? 0, 'scheduled']]"
+        :actions="[['dashboard_customize', 'Email templates', 'Start with a professionally designed template to save time.', route('templates.index')],
+                   ['group', 'Manage audience', 'Organize your contacts into lists and segments for targeted sends.', route('lists.index')],
+                   ['bolt', 'Set up automation', 'Send targeted emails automatically based on subscriber behavior.', route('automations.index')]]" />
 
     <div class="mb-4 flex flex-wrap gap-2">
         <a href="{{ route('campaigns.index') }}" @class(['badge px-3 py-1 text-sm', 'bg-gray-900 text-white' => ! request('status'), 'bg-white text-gray-700 ring-1 ring-gray-200' => request('status')])>All {{ $statusCounts->sum() }}</a>

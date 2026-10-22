@@ -1,7 +1,9 @@
 <x-layouts.app title="Automations">
     <x-page-header title="Automations" subtitle="Journeys that run on their own: welcome series, drips, birthdays, re-engagement and more.">
-        <x-slot:actions><a href="{{ route('automations.create') }}" class="btn-primary"><x-icon name="plus" /> New automation</a></x-slot:actions>
+        <x-slot:actions><a href="{{ route('automations.create') }}" class="btn-primary"><x-icon name="add" /> Create automation</a></x-slot:actions>
     </x-page-header>
+    <x-hero icon="account_tree" title="Put your emails on autopilot" text="Create automated workflows that send the right message at the right time — without lifting a finger."
+        :stats="[['bolt', $automations->total(), 'automations'], ['play_circle', $automations->where('status', 'active')->count(), 'active']]" />
     <div class="card">
         @if ($automations->isEmpty())
             <x-empty title="No automations yet" icon="bolt">Welcome new subscribers, send birthday offers or nurture leads automatically.

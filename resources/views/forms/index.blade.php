@@ -1,7 +1,12 @@
 <x-layouts.app title="Signup forms">
-    <x-page-header title="Signup forms" subtitle="Embed a form on the client's website or share the hosted page — new contacts go straight into a list.">
-        <x-slot:actions><a href="{{ route('forms.create') }}" class="btn-primary"><x-icon name="plus" /> New form</a></x-slot:actions>
+    <x-page-header title="Forms" subtitle="Design signup forms and embed them on your website. Every form connects to a list.">
+        <x-slot:actions><a href="{{ route('forms.create') }}" class="btn-primary"><x-icon name="add" /> Create form</a></x-slot:actions>
     </x-page-header>
+    <x-hero icon="web" title="Capture new subscribers" text="Embedded and popup forms add contacts to your lists automatically."
+        :stats="[['web', $forms->total(), 'forms'], ['check_circle', $forms->where('status', 'published')->count(), 'published']]"
+        :actions="[['edit_note', 'Create a signup form', 'Design a form that captures emails and subscriber data.', route('forms.create')],
+                   ['code', 'Embed on page', 'Add a small code snippet to your site and your form goes live.', route('forms.index')],
+                   ['open_in_new', 'Popup forms', 'Show a modal, slide-in or bar on the client\'s website.', route('forms.create')]]" />
     <div class="card">
         @if ($forms->isEmpty())
             <x-empty title="No forms yet" icon="form">Create a form, then paste its embed code into any website.
