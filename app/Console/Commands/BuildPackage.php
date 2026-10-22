@@ -91,7 +91,18 @@ class BuildPackage extends Command
 
         file_put_contents("{$work}/VERSION", $version."\n");
         // For hosts where the web root can't point at public/: send every request into it
-        file_put_contents("{$work}/.htaccess", "<IfModule mod_rewrite.c>\n    RewriteEngine On\n    RewriteRule ^(.*)$ public/$1 [L]\n</IfModule>\n");
+        // Even without mod_rewrite, never serve .env, logs, code or dependencies from the app root
+        file_put_contents("{$work}/.htaccess", implode("\n", [
+            'Options -Indexes',
+            '<FilesMatch "^\\.|\\.(env|log|sql|gz|lock|json|md|xml)$|^artisan$">',
+            '    Require all denied',
+            '</FilesMatch>',
+            '<IfModule mod_rewrite.c>',
+            '    RewriteEngine On',
+            '    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|vendor)(/|$) - [F,L]',
+            '    RewriteRule ^(.*)$ public/$1 [L]',
+            '</IfModule>',
+        ])."\n");
     }
 
     protected function zip(string $source, string $target): void
