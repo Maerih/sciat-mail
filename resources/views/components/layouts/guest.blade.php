@@ -1,15 +1,16 @@
 @props(['title' => null, 'brand' => null])
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? ($brand?->company ?: $brand?->name ?? \App\Services\Branding::appName()) }}</title>
+    @include('partials.head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @php $color = $brand ? \App\Services\Branding::clientColor($brand) : \App\Services\Branding::appColor(); @endphp
     @if ($brandCss = \App\Services\Branding::css($color))<style>{!! $brandCss !!}</style>@endif
 </head>
-<body class="flex min-h-full items-center justify-center px-4 py-12 font-sans text-gray-800 antialiased">
+<body class="flex min-h-full items-center justify-center px-4 py-12 font-sans text-[14px] antialiased">
     <div class="w-full max-w-md">
         @if ($brand)
             <div class="mb-6 flex items-center justify-center gap-3">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Automation;
 use App\Models\Campaign;
 use App\Models\Delivery;
 use App\Models\DeliveryEvent;
@@ -59,6 +60,10 @@ class DashboardController extends Controller
                 'opens' => $labels->map(fn ($d) => (int) ($dailyOpens[$d] ?? 0))->all(),
             ],
             'recentCampaigns' => Campaign::forWorkspace()->regular()->latest()->limit(6)->get(),
+            'topCampaigns' => Campaign::forWorkspace()->regular()->where('status', 'done')->latest('finished_at')->limit(20)->get()
+                ->map(fn (Campaign $c) => ['campaign' => $c, 'stats' => $c->stats()])
+                ->filter(fn ($r) => $r['stats']['delivered'] > 0)->sortByDesc(fn ($r) => $r['stats']['open_rate'])->take(5)->values(),
+            'automationCount' => Automation::forWorkspace()->where('status', 'active')->count(),
             'quota' => Quota::summary($workspace),
             'serverCount' => $workspace->availableServers()->where('status', 'active')->count(),
             'verifiedDomains' => $workspace->sendingDomains()->where('ownership_verified', true)->where('dkim_verified', true)->count(),

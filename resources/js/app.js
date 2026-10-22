@@ -4,6 +4,12 @@ import Chart from 'chart.js/auto';
 window.Alpine = Alpine;
 window.Chart = Chart;
 
+/** Reads a theme CSS variable (charts follow light/dark and the brand colour). */
+window.themeColor = (name, fallback = '#4ade80') => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+Chart.defaults.color = window.themeColor('--muted', '#8b8b93');
+Chart.defaults.borderColor = window.themeColor('--line', '#2e3338');
+Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+
 /** Copy text to clipboard with a short "Copied" state. */
 Alpine.data('copy', (text) => ({
     copied: false,

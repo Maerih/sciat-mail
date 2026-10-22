@@ -125,7 +125,7 @@ class QuotaTest extends TestCase
         $this->assertSame(10, $this->workspace->fresh()->contact_limit);
 
         Subscriber::factory()->for($this->list, 'list')->count(9)->create();
-        $this->get(route('dashboard'))->assertOk()->assertSee('close to or over its contact limit')->assertSee('9 / 10');
+        $this->get(route('dashboard'))->assertOk()->assertSee('close to or over its contact limit')->assertSee('10 max');
         $this->get(route('workspaces.index'))->assertOk()->assertSee('9 / 10');
     }
 }

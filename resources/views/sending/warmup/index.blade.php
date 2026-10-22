@@ -67,7 +67,7 @@
         <script type="module">
             document.querySelectorAll('canvas[data-schedule]').forEach(el => {
                 const data = JSON.parse(el.dataset.schedule);
-                new Chart(el, { type: 'bar', data: { labels: data.map((_, i) => 'Day ' + (i + 1)), datasets: [{ data, backgroundColor: 'oklch(0.75 0.15 70 / 0.8)', borderRadius: 2 }] },
+                new Chart(el, { type: 'bar', data: { labels: data.map((_, i) => 'Day ' + (i + 1)), datasets: [{ data, backgroundColor: '#fbbf24', borderRadius: 2 }] },
                     options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { beginAtZero: true, ticks: { maxTicksLimit: 4 } } } } });
             });
         </script>

@@ -41,7 +41,7 @@
                         </div>
                     </div>
                 </div>
-                <textarea x-ref="editor" name="html" x-model="html" spellcheck="false" class="min-h-[480px] w-full flex-1 resize-y border-0 bg-gray-950 p-4 font-mono text-xs text-gray-100 focus:ring-0"></textarea>
+                <textarea x-ref="editor" name="html" x-model="html" spellcheck="false" class="min-h-[480px] w-full flex-1 resize-y border-0 code-editor p-4 font-mono text-xs focus:ring-0"></textarea>
                 <details class="border-t border-gray-100 px-5 py-3 text-sm">
                     <summary class="cursor-pointer font-medium text-gray-700">Plain-text version (optional — leave HTML empty to send plain text only)</summary>
                     <textarea name="plain" x-model="plain" rows="6" class="input mt-2 font-mono text-xs"></textarea>
@@ -59,7 +59,7 @@
             <button class="btn-primary">Save & back to flow</button>
         </div>
 
-        <div x-show="gallery" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 p-4 sm:p-10" @keydown.escape.window="gallery = false">
+        <div x-show="gallery" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overlay p-4 sm:p-10" @keydown.escape.window="gallery = false">
             <div class="card w-full max-w-3xl" @click.outside="gallery = false">
                 <div class="card-header"><h2 class="card-title">Choose a template</h2><button type="button" class="btn-ghost btn-sm" @click="gallery = false"><x-icon name="x" class="size-4" /></button></div>
                 <div class="divide-y divide-gray-100">

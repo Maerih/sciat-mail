@@ -32,7 +32,7 @@
                 @if ($campaign->isPlain())
                     <textarea x-ref="editor" name="plain" x-model="plain" class="min-h-[520px] w-full flex-1 resize-y border-0 p-4 font-mono text-sm focus:ring-0" placeholder="Hi &#123;&#123; SUBSCRIBER_FIRST_NAME | there &#125;&#125;,"></textarea>
                 @else
-                    <textarea x-ref="editor" name="html" x-model="html" spellcheck="false" class="min-h-[520px] w-full flex-1 resize-y border-0 bg-gray-950 p-4 font-mono text-xs text-gray-100 focus:ring-0" placeholder="<html>…</html>"></textarea>
+                    <textarea x-ref="editor" name="html" x-model="html" spellcheck="false" class="min-h-[520px] w-full flex-1 resize-y border-0 code-editor p-4 font-mono text-xs focus:ring-0" placeholder="<html>…</html>"></textarea>
                     <details class="border-t border-gray-100 px-5 py-3 text-sm">
                         <summary class="cursor-pointer font-medium text-gray-700">Custom plain-text version (optional)</summary>
                         <textarea name="plain" x-model="plain" rows="6" class="input mt-2 font-mono text-xs" placeholder="Leave empty to generate it from the HTML automatically."></textarea>
@@ -60,7 +60,7 @@
         </div>
 
         @unless ($campaign->isPlain())
-            <div x-show="gallery" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 p-4 sm:p-10" @keydown.escape.window="gallery = false">
+            <div x-show="gallery" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overlay p-4 sm:p-10" @keydown.escape.window="gallery = false">
                 <div class="card w-full max-w-5xl" @click.outside="gallery = false">
                     <div class="card-header"><h2 class="card-title">Choose a template</h2><button type="button" class="btn-ghost btn-sm" @click="gallery = false"><x-icon name="x" class="size-4" /></button></div>
                     <div class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">

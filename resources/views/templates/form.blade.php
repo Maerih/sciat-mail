@@ -9,7 +9,7 @@
                 <div class="card-header"><h2 class="card-title">HTML</h2>
                     @if ($template->exists)<a href="{{ route('templates.builder', $template) }}" class="btn-primary btn-sm">Drag & drop builder</a>
                     @else<span class="text-xs text-gray-500">Save first to use the drag & drop builder</span>@endif</div>
-                <textarea name="html" x-model="html" spellcheck="false" class="min-h-[560px] w-full flex-1 resize-y border-0 bg-gray-950 p-4 font-mono text-xs text-gray-100 focus:ring-0"></textarea>
+                <textarea name="html" x-model="html" spellcheck="false" class="min-h-[560px] w-full flex-1 resize-y border-0 code-editor p-4 font-mono text-xs focus:ring-0"></textarea>
             </div>
             <div class="card flex flex-col">
                 <div class="card-header"><h2 class="card-title">Preview</h2></div>

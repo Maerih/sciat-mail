@@ -1,16 +1,17 @@
 @props(['title' => null])
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? $title.' · ' : '' }}{{ $portalWorkspace->company ?: $portalWorkspace->name }}</title>
+    @include('partials.head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if ($brandCss = \App\Services\Branding::css(\App\Services\Branding::clientColor($portalWorkspace)))<style>{!! $brandCss !!}</style>@endif
 </head>
-<body class="min-h-full font-sans text-gray-800 antialiased">
-    <header class="border-b border-gray-200 bg-white">
+<body class="min-h-full font-sans text-[14px] antialiased">
+    <header class="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--surface)]/95 backdrop-blur">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-2 px-4 py-3 sm:px-6">
             <a href="{{ route('portal.dashboard') }}" class="flex items-center gap-3">
                 @if ($logo = \App\Services\Branding::clientLogo($portalWorkspace))

@@ -51,7 +51,7 @@
             const days = @js($days);
             new Chart(document.getElementById('growth'), {
                 type: 'bar',
-                data: { labels: Object.keys(days).map(d => d.slice(5)), datasets: [{ label: 'New subscribers', data: Object.values(days), backgroundColor: 'oklch(0.58 0.19 265 / 0.75)', borderRadius: 3 }] },
+                data: { labels: Object.keys(days).map(d => d.slice(5)), datasets: [{ label: 'New subscribers', data: Object.values(days), backgroundColor: themeColor('--color-brand-500'), borderRadius: 3 }] },
                 options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } } },
             });
         </script>

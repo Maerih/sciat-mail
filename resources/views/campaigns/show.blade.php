@@ -127,8 +127,8 @@
         <script type="module">
             const ctx = document.getElementById('timeline');
             const chart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [
-                { label: 'Opens', data: [], borderColor: 'oklch(0.58 0.19 265)', backgroundColor: 'oklch(0.58 0.19 265 / 0.1)', fill: true, tension: 0.3, pointRadius: 3 },
-                { label: 'Clicks', data: [], borderColor: 'oklch(0.7 0.15 160)', tension: 0.3, pointRadius: 3 },
+                { label: 'Opens', data: [], borderColor: themeColor('--color-brand-500'), backgroundColor: 'rgba(74,222,128,0.08)', fill: true, tension: 0.3, pointRadius: 3 },
+                { label: 'Clicks', data: [], borderColor: '#60a5fa', tension: 0.3, pointRadius: 3 },
             ] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { ticks: { maxTicksLimit: 8 } } } } });
             async function load(hours) {
                 const d = await (await fetch(@js(route('campaigns.chart', $campaign)) + '?hours=' + hours)).json();

@@ -2,7 +2,7 @@
 @if (\App\Services\Ai\AiAssistant::isConfigured())
 <div x-data="aiDraft(@js(route('ai.draft')), {{ $onDraft }})">
     <button type="button" class="btn-secondary btn-sm" @click="open = true"><x-icon name="bolt" class="size-4" /> Write with AI</button>
-    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 p-4 sm:p-10" @keydown.escape.window="open = false">
+    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overlay p-4 sm:p-10" @keydown.escape.window="open = false">
         <div class="card w-full max-w-xl" @click.outside="open = false">
             <div class="card-header"><h2 class="card-title">Draft this email with AI</h2><button type="button" class="btn-ghost btn-sm" @click="open = false"><x-icon name="x" class="size-4" /></button></div>
             <div class="card-body space-y-3">
