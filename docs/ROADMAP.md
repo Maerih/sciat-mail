@@ -68,6 +68,17 @@ dedicated to a workspace.
   verification (Emailable, Kickbox, ZeroBounce, built-in), GrapesJS drag-and-drop
   builder, IMAP bounce/complaint handlers, RSS-to-email.
 
-## Phase 3 (next)
-REST API + outbound webhooks, client portal logins / roles, plans, quotas and billing,
-white-label branding, AI assistant (subject lines, copy), GeoIP + device reports.
+## Phase 3 — done
+- REST API v1 (client-scoped tokens): lists, contacts (upsert, bulk, tags), campaigns
+  (create, launch, pause, stats), automation enrolment, transactional send; signed
+  outbound webhooks with retries and delivery log; in-app API reference.
+- White-label: platform name/logo/colour; per-client logo, colour and website on
+  subscriber-facing pages and emails.
+- AI assistant: Claude (official SDK), OpenAI or Ollama — subject lines, rewrites,
+  email drafts, A/B variant subjects.
+- Device, OS, email app and country (CDN header) reports.
+- Per-client monthly email and contact quotas (no billing).
+- Read-only client portal.
+
+## Possible next steps
+MaxMind GeoIP, Stripe billing, client roles beyond read-only, SMS, landing pages.
