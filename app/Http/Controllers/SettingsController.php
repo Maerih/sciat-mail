@@ -178,6 +178,9 @@ class SettingsController extends Controller
         switch ($request->action) {
             case 'migrate':
                 Artisan::call('migrate', ['--force' => true]);
+                // new starter templates and warmup strategies ship with updates; both seeders are idempotent
+                (new \Database\Seeders\TemplateSeeder)->run();
+                (new \Database\Seeders\WarmupStrategySeeder)->run();
                 Artisan::call('optimize:clear');
 
                 return back()->with('success', 'Database updated and caches cleared.');

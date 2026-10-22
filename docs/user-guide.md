@@ -9,6 +9,18 @@
 The **command palette** (Ctrl/⌘ + K) jumps to any page or action. The moon/sun button switches
 dark and light themes.
 
+## Team inbox
+**Team inbox** (under Home) shows the company mailboxes an administrator has connected — e.g.
+info@sciatafrica.com and maeri@sciatafrica.com — so nobody needs webmail or cPanel.
+- New mail is fetched every minute (or click **Check mail**); messages are grouped into conversations.
+- Views: Inbox, Unread, Starred, Assigned to me, Sent, Done; search by subject, sender or text.
+- Open a conversation to read it (marked read here and on the mail server), download attachments,
+  and see if the sender is one of your subscribers.
+- **Reply**, **Reply all** or **Compose** with attachments. Mail goes out through that mailbox's own
+  SMTP server with the mailbox signature and a quoted history, and a copy is saved to its Sent folder.
+- **Star**, **Mark unread**, **Done** (archive) and **assign** a conversation to a teammate. A new
+  reply reopens a finished conversation. The sidebar badge counts unread conversations.
+
 ## Home (dashboard)
 Welcome summary, setup checklist, resource counters, 30-day performance (sent, open, click,
 bounce), sending activity chart, deliverability health, recent and top campaigns.
@@ -90,7 +102,12 @@ field, copy/move list, unsubscribe). Per-step stats and contacts list.
 *Email-to-SMS tip:* Send email → Wait 2 days → Condition "Opened" → on **No**, Send SMS.
 
 ### Templates, signatures and assets
-- **Templates** — starter layouts plus your own; edit in the builder or HTML.
+- **Templates** — general starter layouts, a **Cybersecurity** set built for SCIAT AFRICA (SCIAT
+  Cyber News newsletter and welcome, threat alert, security tip, phishing awareness, blog digest,
+  research download, product spotlight and portfolio, service spotlight and overview, incident
+  response retainer, managed plans, special offer, academy training, webinar, banking brief, client
+  onboarding, re-engagement) and your own. Text in [square brackets] is a placeholder to replace.
+  Edit in the builder or HTML.
 - **Sending → Signatures** — reusable signatures; `{{ SIGNATURE }}` inserts the default one;
   builder blocks insert a copy.
 - **Campaigns → Assets** — image and PDF library (shared with builder uploads); copy URLs.

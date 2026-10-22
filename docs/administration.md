@@ -7,6 +7,14 @@ Create, rename and delete clients (workspaces). Each client's **Client settings*
 hold timezone, company, postal address, website, brand colour/logo, SMS country, **limits**
 (emails per month, SMS per month, contacts) and **client portal access** (read-only logins).
 
+## Mailboxes (team inbox)
+**Administration → Mailboxes → Add a mailbox:** name, email address, sender name, IMAP (incoming)
+and SMTP (outgoing) servers, username and password, optional HTML signature, colour and who can see
+it (nobody ticked = whole team; admins always see all). Presets fill the servers for **cPanel / own
+domain** (`mail.yourdomain`, IMAP 993 SSL, SMTP 465 SSL), **Google Workspace** and **Microsoft 365**.
+Click **Test** to check incoming and outgoing mail. Removing a mailbox never deletes mail on the server.
+Passwords are encrypted. Gmail/Outlook accounts with 2-step verification need an *app password*.
+
 ## Team
 Add team members as *member* or *admin*. Members manage campaigns for every client; admins also
 manage clients, the team, shared servers/providers and settings.

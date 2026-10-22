@@ -1,4 +1,4 @@
-# SCIAT Mail — Documentation (Version 1.0.0)
+# SCIAT Mail — Documentation (Version 1.1.0)
 
 SCIAT Mail is our own mass email and SMS marketing platform. The team runs email and SMS
 programmes for each client from one place: lists, campaigns, automations, signup forms,

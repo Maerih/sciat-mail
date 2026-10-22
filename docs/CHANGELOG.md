@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.1.0 — 22 October 2026
+
+### Team inbox
+- Connect company mailboxes (IMAP/SMTP) — e.g. info@ and maeri@ — and read and answer them inside the platform.
+- Sync every minute from Inbox and Sent, conversations threaded by email headers, attachments, safe HTML view.
+- Reply, reply all and compose with attachments; signatures; copies saved to the server's Sent folder.
+- Unread/starred/assigned/sent/done views, search, assignment, read state mirrored to the mail server, sidebar badge.
+- Per-mailbox access for team members; cPanel, Google Workspace and Microsoft 365 presets; connection test.
+
+### Templates
+- 19 SCIAT AFRICA cybersecurity templates (newsletter, alerts, tips, products, services, offers, training,
+  research, onboarding and more) on a responsive, Outlook-safe layout in SCIAT branding.
+- "Apply update" now also installs new starter templates and warmup strategies.
+
 ## 1.0.0 — 22 October 2026
 
 First complete release of SCIAT Mail.

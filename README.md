@@ -4,7 +4,7 @@ Self-hosted email and SMS marketing platform for running client campaigns: lists
 websites, email campaigns with a drag-and-drop builder, automations, bulk and two-way SMS,
 deliverability tools, reports, a REST API and a read-only client portal.
 
-**Version 1.0.0** — see [docs/CHANGELOG.md](docs/CHANGELOG.md).
+**Version 1.1.0** — see [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
 ## Documentation
 Start at **[docs/README.md](docs/README.md)**:
