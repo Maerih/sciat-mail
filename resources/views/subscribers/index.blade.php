@@ -74,7 +74,7 @@
                         @foreach ($subscribers as $subscriber)
                             <tr>
                                 <td><input type="checkbox" data-row value="{{ $subscriber->uid }}" x-model="selected" class="rounded border-gray-300 text-brand-600"></td>
-                                <td><a href="{{ route('lists.subscribers.show', [$list, $subscriber]) }}" class="font-medium text-gray-900 hover:text-brand-600">{{ $subscriber->email }}</a></td>
+                                <td><a href="{{ route('lists.subscribers.show', [$list, $subscriber]) }}" class="flex items-center gap-3 font-medium hover:text-brand-600"><span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-600 uppercase">{{ substr($subscriber->email, 0, 1) }}</span>{{ $subscriber->email }}</a></td>
                                 @foreach ($fields->take(3) as $field)<td>{{ $subscriber->field($field->tag) }}</td>@endforeach
                                 <td><x-status-badge :status="$subscriber->status" />
                                     @if ($subscriber->verification_status !== 'unverified')

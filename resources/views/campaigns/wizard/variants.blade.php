@@ -4,7 +4,7 @@
         $rows = old('variants', $variants->map(fn ($v) => $v->only(['subject', 'from_name', 'preheader', 'html']))->values()->all());
         $rows = $rows ?: [['subject' => '', 'from_name' => '', 'preheader' => '', 'html' => ''], ['subject' => '', 'from_name' => '', 'preheader' => '', 'html' => '']];
     @endphp
-    <form method="POST" action="{{ route('campaigns.variants.save', $campaign) }}" class="max-w-4xl space-y-6"
+    <form method="POST" action="{{ route('campaigns.variants.save', $campaign) }}" class="space-y-6 [&>*:not(.sticky)]:max-w-5xl"
           x-data="{ variants: @js($rows), letters: 'ABCDE', aiLoading: false, aiError: '' }">
         @csrf
         <div class="card card-body space-y-2 text-sm text-gray-600">
@@ -56,9 +56,9 @@
             <x-field name="wait_hours" type="number" min="1" max="168" label="Test duration (hours)" :value="$campaign->abSetting('wait_hours')" help="Then the winner goes to everyone else." />
         </div>
 
-        <div class="flex justify-between">
-            <a href="{{ route('campaigns.content', $campaign) }}" class="btn-secondary">Back</a>
-            <button class="btn-primary">Save & continue</button>
-        </div>
+        <x-wizard-bar icon="science" title="Set up the test" text="The winner is sent automatically to the rest of the audience.">
+            <a href="{{ route('campaigns.content', $campaign) }}" class="btn-secondary"><x-icon name="arrow_back" class="size-4.5" /> Back</a>
+            <button class="btn-primary">Save & continue <x-icon name="arrow_forward" class="size-4.5" /></button>
+        </x-wizard-bar>
     </form>
 </x-layouts.app>

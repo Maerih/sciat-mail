@@ -13,10 +13,10 @@
     </x-page-header>
 
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <x-stat label="Entered" :value="number_format($counts['total'])" />
-        <x-stat label="In progress" :value="number_format($counts['active'])" />
-        <x-stat label="Completed" :value="number_format($counts['completed'])" tone="green" />
-        <x-stat label="Exited early" :value="number_format($counts['exited'])" hint="Unsubscribed or removed" />
+        <x-stat label="Entered" :value="number_format($counts['total'])" icon="login" />
+        <x-stat label="In progress" :value="number_format($counts['active'])" icon="pending" />
+        <x-stat label="Completed" :value="number_format($counts['completed'])" tone="green" icon="task_alt" />
+        <x-stat label="Exited early" :value="number_format($counts['exited'])" hint="Unsubscribed or removed" icon="logout" />
     </div>
 
     @if ($problems && ! $automation->isActive())
@@ -25,8 +25,8 @@
         </div>
     @endif
 
-    <div class="card mt-6 overflow-x-auto">
-        <div class="flex min-w-max flex-col items-center px-6 py-8">
+    <div class="card mt-6 overflow-x-auto bg-[radial-gradient(var(--line)_1px,transparent_1px)] [background-size:18px_18px]">
+        <div class="flex min-w-max flex-col items-center px-6 py-10">
             <div class="flex w-72 shrink-0 items-center gap-3 rounded-xl border border-brand-500/40 bg-brand-50 p-3.5">
                 <span class="flex size-8 items-center justify-center rounded-lg bg-brand-600 text-white"><x-icon name="bolt" class="size-4.5" /></span>
                 <div class="min-w-0"><div class="text-xs font-medium tracking-wide text-brand-700 uppercase">Trigger</div><div class="truncate text-sm font-semibold text-gray-900">{{ $automation->triggerSummary() }}</div></div>

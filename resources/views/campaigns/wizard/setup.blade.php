@@ -4,9 +4,11 @@
         $weights = $campaign->server_weights ?? [];
         $verified = $domains->filter->isVerified()->pluck('name');
     @endphp
-    <form method="POST" action="{{ route('campaigns.setup.save', $campaign) }}" class="max-w-3xl space-y-6"
+    <form method="POST" action="{{ route('campaigns.setup.save', $campaign) }}" class="space-y-6"
           x-data="{ allServers: @js(old('use_all_servers', empty($weights)) ? true : false), utm: @js((bool) old('utm_enabled', $campaign->utm['enabled'] ?? false)), from: @js(old('from_email', $campaign->from_email)), verified: @js($verified) }">
         @csrf
+        <div class="grid items-start gap-6 lg:grid-cols-[1fr_400px]">
+        <div class="space-y-6">
         <div class="card card-body space-y-4">
             <h2 class="card-title">Basic information</h2>
             <x-field name="name" label="Campaign name" :value="$campaign->name" required help="Internal only — subscribers don't see it." />
@@ -25,17 +27,31 @@
             </div>
         </div>
 
-        <div class="card card-body space-y-4">
-            <h2 class="card-title">Tracking & delivery</h2>
+        <div class="card card-body space-y-3">
+            <h2 class="card-title">RSS feed (optional)</h2>
+            <p class="-mt-1 text-sm text-gray-500">Pull the latest blog or podcast posts into this email with <code>&#123;&#123; RSS_ITEMS &#125;&#125;</code>, <code>&#123;&#123; RSS_LATEST_TITLE &#125;&#125;</code> or <code>&#123;&#123; RSS_LATEST_URL &#125;&#125;</code>.</p>
+            <div class="grid gap-3 sm:grid-cols-4">
+                <x-field name="rss_url" type="url" label="Feed URL" :value="$campaign->rss['url'] ?? ''" placeholder="https://example.com/feed" class="sm:col-span-3" />
+                <x-field name="rss_count" type="number" min="1" max="20" label="Posts" :value="$campaign->rss['count'] ?? 5" />
+            </div>
+        </div>
+
+        </div>
+        <div class="space-y-6">
+        <details class="card group" open>
+            <summary class="card-header cursor-pointer list-none"><div><h2 class="card-title">Advanced settings</h2><p class="text-xs text-[var(--muted)]">Tracking, DKIM signing and delivery options</p></div><x-icon name="expand_more" class="size-5 text-[var(--muted)] transition group-open:rotate-180" /></summary>
+            <div class="card-body space-y-4">
             <x-toggle name="track_open" label="Track opens" help="Adds an invisible tracking pixel. Apple Mail Privacy Protection can inflate open counts." :checked="$campaign->track_open" />
             <x-toggle name="track_click" label="Track clicks" help="Links are rewritten through your tracking domain." :checked="$campaign->track_click" />
             <x-toggle name="sign_dkim" label="DKIM-sign messages" help="Signs SMTP sends with the verified domain's key. API providers sign with their own keys." :checked="$campaign->sign_dkim" />
             <x-toggle name="spintax" label="Spintax" help="Write {Hi|Hello|Hey} and each recipient gets one option — useful for varied cold outreach. Works in subject, preheader and content; nesting allowed." :checked="$campaign->spintax" />
             <x-toggle name="skip_failed" label="Skip failed messages" help="Keep sending when an individual delivery fails. Off: the first permanent error stops the campaign." :checked="$campaign->skip_failed" />
-        </div>
+            </div>
+        </details>
 
-        <div class="card card-body space-y-4">
-            <h2 class="card-title">Sending servers</h2>
+        <details class="card group" @if (! empty($weights)) open @endif>
+            <summary class="card-header cursor-pointer list-none"><div><h2 class="card-title">Sending servers</h2><p class="text-xs text-[var(--muted)]">By default every active server is used, picked at random per message</p></div><x-icon name="expand_more" class="size-5 text-[var(--muted)] transition group-open:rotate-180" /></summary>
+            <div class="card-body space-y-4">
             @if ($servers->isEmpty())
                 <p class="text-sm text-amber-700">No active sending server. <a href="{{ route('sending.servers.select') }}" class="underline">Connect one</a> before launching.</p>
             @else
@@ -53,29 +69,26 @@
                     @endforeach
                 </div>
             @endif
-        </div>
+            </div>
+        </details>
 
-        <div class="card card-body space-y-4">
+        <details class="card group" @if ($campaign->utm['enabled'] ?? false) open @endif>
+            <summary class="card-header cursor-pointer list-none"><div><h2 class="card-title">UTM tracking</h2><p class="text-xs text-[var(--muted)]">Attribute website traffic to this campaign in analytics tools</p></div><x-icon name="expand_more" class="size-5 text-[var(--muted)] transition group-open:rotate-180" /></summary>
+            <div class="card-body space-y-4">
             <x-toggle name="utm_enabled" label="Add Google Analytics UTM tags" help="Appends utm_* parameters to every link." :checked="$campaign->utm['enabled'] ?? false" x-model="utm" />
-            <div x-show="utm" x-cloak class="grid gap-3 sm:grid-cols-3">
+            <div x-show="utm" x-cloak class="grid gap-3 sm:grid-cols-2">
                 @foreach (['source' => 'newsletter', 'medium' => 'email', 'campaign' => \Illuminate\Support\Str::slug($campaign->name), 'term' => '', 'content' => ''] as $key => $default)
                     <x-field :name="'utm['.$key.']'" :label="'utm_'.$key" :value="$campaign->utm[$key] ?? $default" />
                 @endforeach
             </div>
-        </div>
-
-        <div class="card card-body space-y-3">
-            <h2 class="card-title">RSS feed (optional)</h2>
-            <p class="-mt-1 text-sm text-gray-500">Pull the latest blog or podcast posts into this email with <code>&#123;&#123; RSS_ITEMS &#125;&#125;</code>, <code>&#123;&#123; RSS_LATEST_TITLE &#125;&#125;</code> or <code>&#123;&#123; RSS_LATEST_URL &#125;&#125;</code>.</p>
-            <div class="grid gap-3 sm:grid-cols-4">
-                <x-field name="rss_url" type="url" label="Feed URL" :value="$campaign->rss['url'] ?? ''" placeholder="https://example.com/feed" class="sm:col-span-3" />
-                <x-field name="rss_count" type="number" min="1" max="20" label="Posts" :value="$campaign->rss['count'] ?? 5" />
             </div>
+        </details>
+        </div>
         </div>
 
-        <div class="flex justify-between">
-            <a href="{{ route('campaigns.recipients', $campaign) }}" class="btn-secondary">Back</a>
-            <button class="btn-primary">Save & continue</button>
-        </div>
+        <x-wizard-bar icon="tune" title="Name it and set the sender" text="The from name and subject are what recipients judge first.">
+            <a href="{{ route('campaigns.recipients', $campaign) }}" class="btn-secondary"><x-icon name="arrow_back" class="size-4.5" /> Back</a>
+            <button class="btn-primary">Save & continue <x-icon name="arrow_forward" class="size-4.5" /></button>
+        </x-wizard-bar>
     </form>
 </x-layouts.app>

@@ -6,7 +6,7 @@
         $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
         $ranges = old('ranges', $campaign->sending_window ?? collect(range(1, 5))->map(fn ($d) => ['weekday' => $d, 'start' => '09:00', 'end' => '17:00'])->all());
     @endphp
-    <form method="POST" action="{{ route('campaigns.schedule.save', $campaign) }}" class="max-w-3xl space-y-6"
+    <form method="POST" action="{{ route('campaigns.schedule.save', $campaign) }}" class="space-y-6 [&>*:not(.sticky)]:max-w-4xl"
           x-data="{ when: @js(old('when', $local ? 'later' : 'now')), windowOn: @js((bool) old('window', $campaign->sending_window ? 1 : 0)), ranges: @js(array_values($ranges)),
                     preset(days, start, end) { this.ranges = days.map(d => ({ weekday: d, start, end })) } }">
         @csrf
@@ -49,9 +49,9 @@
                 <button type="button" class="btn-secondary btn-sm" @click="ranges.push({ weekday: 1, start: '09:00', end: '17:00' })"><x-icon name="plus" class="size-4" /> Add range</button>
             </div>
         </div>
-        <div class="flex justify-between">
-            <a href="{{ route('campaigns.content', $campaign) }}" class="btn-secondary">Back</a>
-            <button class="btn-primary">Save & continue</button>
-        </div>
+        <x-wizard-bar icon="schedule" title="Pick the best moment" text="Times are in the client's timezone ({{ $campaign->workspace->timezone }}).">
+            <a href="{{ route($campaign->isAbTest() ? 'campaigns.variants' : 'campaigns.content', $campaign) }}" class="btn-secondary"><x-icon name="arrow_back" class="size-4.5" /> Back</a>
+            <button class="btn-primary">Save & continue <x-icon name="arrow_forward" class="size-4.5" /></button>
+        </x-wizard-bar>
     </form>
 </x-layouts.app>

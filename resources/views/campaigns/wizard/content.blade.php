@@ -51,13 +51,11 @@
         @error('html')<p class="error mt-2">{{ $message }}</p>@enderror
         @error('plain')<p class="error mt-2">{{ $message }}</p>@enderror
 
-        <div class="mt-6 flex justify-between">
-            <a href="{{ route('campaigns.setup', $campaign) }}" class="btn-secondary">Back</a>
-            <div class="flex gap-2">
-                <button name="next" value="stay" class="btn-secondary">Save</button>
-                <button class="btn-primary">Save & continue</button>
-            </div>
-        </div>
+        <x-wizard-bar icon="palette" title="Design the email" text="Use merge tags to personalise, and preview before you continue.">
+            <a href="{{ route('campaigns.setup', $campaign) }}" class="btn-secondary"><x-icon name="arrow_back" class="size-4.5" /> Back</a>
+            <button name="next" value="stay" class="btn-secondary"><x-icon name="save" class="size-4.5" /> Save</button>
+            <button class="btn-primary">Save & continue <x-icon name="arrow_forward" class="size-4.5" /></button>
+        </x-wizard-bar>
 
         @unless ($campaign->isPlain())
             <div x-show="gallery" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overlay p-4 sm:p-10" @keydown.escape.window="gallery = false">

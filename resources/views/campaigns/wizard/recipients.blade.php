@@ -11,7 +11,7 @@
         <div class="card"><x-empty title="No lists yet" icon="users">Create a list and add subscribers before building a campaign.
             <x-slot:action><a href="{{ route('lists.create') }}" class="btn-primary">Create list</a></x-slot:action></x-empty></div>
     @else
-        <form method="POST" action="{{ route('campaigns.recipients.save', $campaign) }}" class="max-w-3xl space-y-6"
+        <form method="POST" action="{{ route('campaigns.recipients.save', $campaign) }}" class="space-y-6 [&>*:not(.sticky)]:max-w-4xl"
               x-data="{ rows: @js($rows), lists: @js($listData) }">
             @csrf
             @foreach ([false => ['Send to', 'Pick one or more lists. Narrow each list with a segment if you like.'], true => ['Exclude', 'Optional: anyone in these lists/segments will not receive this campaign.']] as $exclude => [$title, $help])
@@ -34,7 +34,10 @@
                 </div>
             @endforeach
             <p class="text-sm text-gray-500">Only subscribed contacts receive campaigns. Addresses on the blacklist and duplicates across lists are removed automatically.</p>
-            <div class="flex justify-end"><button class="btn-primary">Save & continue</button></div>
+            <x-wizard-bar icon="group" title="Choose who receives this" text="Pick a list or segment — you can refine the audience later.">
+                <a href="{{ route('campaigns.index') }}" class="btn-secondary">Cancel</a>
+                <button class="btn-primary">Save & continue <x-icon name="arrow_forward" class="size-4.5" /></button>
+            </x-wizard-bar>
         </form>
     @endif
 </x-layouts.app>
