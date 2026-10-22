@@ -2,6 +2,8 @@
 
 use App\Http\Middleware\AuthenticateApiToken;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureClient;
+use App\Http\Middleware\EnsureTeam;
 use App\Http\Middleware\SetCurrentWorkspace;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'workspace' => SetCurrentWorkspace::class,
             'admin' => EnsureAdmin::class,
+            'team' => EnsureTeam::class,
+            'client' => EnsureClient::class,
         ]);
         // Hit by subscribers' mail clients, embedded forms on client sites and ESP webhooks
         $middleware->preventRequestForgery(except: ['subscribe/*', 'webhooks/*', 'u/*']);

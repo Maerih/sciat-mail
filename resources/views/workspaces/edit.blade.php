@@ -33,6 +33,26 @@
         <div class="flex justify-end"><button class="btn-primary">Save settings</button></div>
     </form>
 
+    <div class="card mt-6 max-w-2xl">
+        <div class="card-header"><div><h2 class="card-title">Client portal access</h2>
+            <p class="text-xs text-gray-500">Read-only logins for {{ $workspace->name }}: campaign results and list growth. They can't send, edit or see individual contacts.</p></div></div>
+        @if ($portalUsers->isNotEmpty())
+            <table class="table"><tbody>
+                @foreach ($portalUsers as $portalUser)
+                    <tr><td class="font-medium text-gray-900">{{ $portalUser->name }}</td><td>{{ $portalUser->email }}</td>
+                        <td class="text-right"><x-confirm-delete :action="route('portal-users.destroy', $portalUser)" label="Remove" :message="'Remove portal access for '.$portalUser->email.'?'" /></td></tr>
+                @endforeach
+            </tbody></table>
+        @endif
+        <form method="POST" action="{{ route('portal-users.store') }}" class="card-body grid gap-3 border-t border-gray-100 sm:grid-cols-3">
+            @csrf
+            <x-field name="portal_name" label="Name" required />
+            <x-field name="portal_email" type="email" label="Email" required />
+            <x-field name="portal_password" type="password" label="Password" required autocomplete="new-password" help="At least 10 characters." />
+            <div class="sm:col-span-3 flex justify-end"><button class="btn-secondary">Give portal access</button></div>
+        </form>
+    </div>
+
     @if (auth()->user()->isAdmin())
         <form method="POST" action="{{ route('workspaces.destroy') }}" class="card card-body mt-6 max-w-2xl space-y-3 border-red-200">
             @csrf @method('DELETE')

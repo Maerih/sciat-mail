@@ -23,8 +23,10 @@ class Workspace extends Model
     public static function current(): ?Workspace
     {
         $user = auth()->user();
-        if ($user && static::$current?->id !== $user->current_workspace_id) {
-            static::$current = $user->current_workspace_id ? static::find($user->current_workspace_id) : null;
+        // client portal users are pinned to their own workspace, whatever else is stored
+        $wanted = $user?->isClient() ? $user->workspace_id : $user?->current_workspace_id;
+        if ($user && static::$current?->id !== $wanted) {
+            static::$current = $wanted ? static::find($wanted) : null;
         }
 
         return static::$current;

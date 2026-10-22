@@ -10,7 +10,7 @@ class TeamController extends Controller
 {
     public function index()
     {
-        return view('team.index', ['users' => User::orderBy('name')->get()]);
+        return view('team.index', ['users' => User::where('role', '!=', 'client')->orderBy('name')->get()]);
     }
 
     public function store(Request $request)

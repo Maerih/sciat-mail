@@ -36,9 +36,21 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [Controllers\AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 /*
+| Client portal (read-only, one client per user)
+*/
+Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(function () {
+    Route::get('/', [Controllers\PortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/campaigns', [Controllers\PortalController::class, 'campaigns'])->name('campaigns');
+    Route::get('/campaigns/{campaign}', [Controllers\PortalController::class, 'campaign'])->name('campaign');
+    Route::get('/lists', [Controllers\PortalController::class, 'lists'])->name('lists');
+    Route::get('/account', [Controllers\PortalController::class, 'account'])->name('account');
+    Route::put('/account', [Controllers\ProfileController::class, 'update'])->name('account.update');
+});
+
+/*
 | Application (team only)
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'team'])->group(function () {
     Route::get('/workspaces/create', [Controllers\WorkspaceController::class, 'create'])->name('workspaces.create');
     Route::post('/workspaces', [Controllers\WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::post('/workspaces/{workspace}/switch', [Controllers\WorkspaceController::class, 'switch'])->name('workspaces.switch');
@@ -58,6 +70,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('workspace')->group(function () {
         Route::get('/', [Controllers\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/workspace/settings', [Controllers\WorkspaceController::class, 'edit'])->name('workspaces.edit');
+        Route::post('/workspace/portal-users', [Controllers\PortalUserController::class, 'store'])->name('portal-users.store');
+        Route::delete('/workspace/portal-users/{user}', [Controllers\PortalUserController::class, 'destroy'])->name('portal-users.destroy');
         Route::put('/workspace/settings', [Controllers\WorkspaceController::class, 'update'])->name('workspaces.update');
         Route::delete('/workspace', [Controllers\WorkspaceController::class, 'destroy'])->middleware('admin')->name('workspaces.destroy');
 

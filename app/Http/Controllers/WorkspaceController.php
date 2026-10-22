@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Workspace;
 use App\Services\Quota;
 use Illuminate\Http\Request;
@@ -39,7 +40,10 @@ class WorkspaceController extends Controller
 
     public function edit()
     {
-        return view('workspaces.edit', ['workspace' => Workspace::current()]);
+        return view('workspaces.edit', [
+            'workspace' => Workspace::current(),
+            'portalUsers' => User::where('role', 'client')->where('workspace_id', Workspace::current()->id)->orderBy('name')->get(),
+        ]);
     }
 
     public function update(Request $request)
