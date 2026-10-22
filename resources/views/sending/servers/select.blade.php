@@ -8,7 +8,7 @@
                     <span class="text-sm font-semibold text-gray-900">{{ $type['label'] }}</span>
                 </div>
                 <p class="mt-2 text-sm text-gray-500">{{ $type['description'] }}</p>
-                <p class="mt-2 text-xs text-gray-400">{{ $type['webhook'] ? 'Bounce & complaint webhooks' : 'Bounce processing via IMAP in a later phase' }}</p>
+                <p class="mt-2 text-xs text-gray-400">{{ $type['webhook'] ? 'Bounce & complaint webhooks' : 'Bounces read from a bounce mailbox (IMAP)' }}</p>
             </a>
         @endforeach
     </div>

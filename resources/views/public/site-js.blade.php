@@ -39,6 +39,7 @@
             if (!form || el.getAttribute('data-sm-mounted')) { return; }
             el.setAttribute('data-sm-mounted', '1');
             el.innerHTML = form.html;
+            @include('public.partials.captcha-js')
             var node = el.querySelector('form');
             node.addEventListener('submit', function (e) {
                 e.preventDefault();

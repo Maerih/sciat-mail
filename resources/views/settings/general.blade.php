@@ -44,6 +44,20 @@
                 </div>
             </div>
 
+            <div class="card" x-data="{ captcha: @js(old('captcha_provider', $s('captcha_provider', 'none'))) }">
+                <div class="card-header"><div><h2 class="card-title">Form protection</h2><p class="text-xs text-[var(--muted)]">Stop bots from filling your signup forms with fake contacts.</p></div></div>
+                <div class="card-body space-y-4">
+                    <div><label class="label">CAPTCHA</label>
+                        <select name="captcha_provider" class="input" x-model="captcha">
+                            @foreach (\App\Services\Captcha::PROVIDERS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                        </select>
+                        <p class="help">Applies to every hosted, embedded, popup and website form. Get keys at google.com/recaptcha (v2 checkbox) or dash.cloudflare.com → Turnstile.</p></div>
+                    <div x-show="captcha !== 'none'" x-cloak class="grid gap-4 sm:grid-cols-2">
+                        <x-field name="captcha_site_key" label="Site key" :value="$s('captcha_site_key')" />
+                        <x-field name="captcha_secret" type="password" label="Secret key" :placeholder="$s('captcha_secret') ? '•••••••• saved — leave blank to keep' : ''" autocomplete="new-password" />
+                    </div>
+                </div>
+            </div>
             <div class="card">
                 <div class="card-header"><div><h2 class="card-title">Site status</h2><p class="text-xs text-[var(--muted)]">Take the app offline for maintenance. Administrators can still log in.</p></div></div>
                 <div class="card-body space-y-4">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Setting;
 use App\Models\Workspace;
 use App\Services\Branding;
+use App\Services\Captcha;
 use App\Services\DatabaseBackup;
 use App\Services\Requirements;
 use App\Services\SendingHealth;
@@ -73,10 +74,18 @@ class SettingsController extends Controller
             'offline_message' => 'nullable|string|max:500',
             'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg,webp|max:2048',
             'favicon' => 'nullable|mimes:png,ico,svg|max:512',
+            'captcha_provider' => ['nullable', Rule::in(array_keys(Captcha::PROVIDERS))],
+            'captcha_site_key' => 'nullable|string|max:190',
+            'captcha_secret' => 'nullable|string|max:190',
         ]);
 
         $values = collect($data)->only(['platform_name', 'platform_description', 'platform_color', 'default_theme', 'offline_message'])->all();
         $values['site_online'] = $request->boolean('site_online') ? '1' : '0';
+        $values['captcha_provider'] = $data['captcha_provider'] ?? 'none';
+        $values['captcha_site_key'] = $data['captcha_site_key'] ?? null;
+        if (filled($data['captcha_secret'] ?? null)) {
+            $values['captcha_secret'] = Crypt::encryptString($data['captcha_secret']); // blank keeps the stored secret
+        }
         foreach (['logo' => 'platform_logo', 'favicon' => 'platform_favicon'] as $field => $key) {
             if ($request->hasFile($field)) {
                 $values[$key] = $request->file($field)->store('branding', 'public');

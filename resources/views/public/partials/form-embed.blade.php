@@ -28,5 +28,11 @@
     <div class="sm-row"><label class="sm-check"><input type="checkbox" name="consent" value="1" required> <span>{!! strip_tags($form->consent_text, '<a><strong><em>') !!}</span></label></div>
 @endif
     <div class="sm-hp" aria-hidden="true"><input type="text" name="website_url" tabindex="-1" autocomplete="off"></div>
+@if (\App\Services\Captcha::enabled())
+    <div class="sm-row sm-captcha"></div>
+@endif
     <button type="submit">{{ $form->button_text }}</button>
 </form>
+@if (\App\Services\Captcha::enabled())
+<script>@include('public.partials.captcha-js')</script>
+@endif

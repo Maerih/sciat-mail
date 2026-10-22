@@ -41,6 +41,7 @@
         if (cfg.title && !bar) { root.querySelector('h2').textContent = cfg.title; }
         if (cfg.description && !bar) { root.querySelector('.sm-desc').textContent = cfg.description; }
         document.body.appendChild(root);
+        @include('public.partials.captcha-js')
 
         function close() { root.remove(); window.__smPopupOpen = false; }
         root.querySelector('.sm-close').addEventListener('click', close);

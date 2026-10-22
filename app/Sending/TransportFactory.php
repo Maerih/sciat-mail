@@ -61,8 +61,19 @@ class TransportFactory
             'sendgrid-smtp' => new Dsn('sendgrid+smtp', 'default', $c['api_key']),
             'mailgun-api' => new Dsn('mailgun+api', 'default', $c['api_key'], $c['domain'], null, ['region' => $c['region'] ?? 'us']),
             'mailgun-smtp' => new Dsn('mailgun+smtp', 'default', $c['username'], $c['password'], null, ['region' => $c['region'] ?? 'us']),
-            default => throw new \InvalidArgumentException("Unsupported sending server type [{$server->type}]"),
+            default => $this->presetDsn($server),
         };
+    }
+
+    /** SMTP relays with a fixed host: field names (or "=literal" values) give the credentials. */
+    protected function presetDsn(SendingServer $server): Dsn
+    {
+        $preset = SendingServer::TYPES[$server->type]['smtp'] ?? throw new \InvalidArgumentException("Unsupported sending server type [{$server->type}]");
+        $c = $server->config ?? [];
+        $value = fn (string $key) => str_starts_with($key, '=') ? substr($key, 1) : ($c[$key] ?? null);
+        $host = $server->type === 'sparkpost' && ($c['region'] ?? 'us') === 'eu' ? 'smtp.eu.sparkpostmail.com' : $preset['host'];
+
+        return new Dsn('smtp', $host, $value($preset['username']), $value($preset['password']), $preset['port']);
     }
 
     public function forget(SendingServer $server): void

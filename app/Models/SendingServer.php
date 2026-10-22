@@ -108,6 +108,56 @@ class SendingServer extends Model
                 'webhook_signing_key' => ['label' => 'Webhook signing key', 'rules' => 'nullable|string', 'secret' => true],
             ],
         ],
+        'postmark' => [
+            'label' => 'Postmark', 'description' => 'Fast, reliable delivery via Postmark SMTP', 'webhook' => null,
+            'smtp' => ['host' => 'smtp.postmarkapp.com', 'port' => 587, 'username' => 'server_token', 'password' => 'server_token'], 'spf' => 'spf.mtasv.net',
+            'fields' => ['server_token' => ['label' => 'Server API token', 'rules' => 'required|string', 'secret' => true]],
+        ],
+        'sparkpost' => [
+            'label' => 'SparkPost', 'description' => 'Enterprise delivery via SparkPost SMTP', 'webhook' => null,
+            'smtp' => ['host' => 'smtp.sparkpostmail.com', 'port' => 587, 'username' => '=SMTP_Injection', 'password' => 'api_key'], 'spf' => '_spf.sparkpostmail.com',
+            'fields' => [
+                'api_key' => ['label' => 'API key (with Send via SMTP permission)', 'rules' => 'required|string', 'secret' => true],
+                'region' => ['label' => 'Region', 'rules' => 'required|in:us,eu', 'options' => ['us' => 'US', 'eu' => 'EU']],
+            ],
+        ],
+        'elasticemail' => [
+            'label' => 'Elastic Email', 'description' => 'Affordable pay-as-you-go delivery via Elastic Email SMTP', 'webhook' => null,
+            'smtp' => ['host' => 'smtp.elasticemail.com', 'port' => 2525, 'username' => 'username', 'password' => 'password'], 'spf' => '_spf.elasticemail.com',
+            'fields' => [
+                'username' => ['label' => 'SMTP username (account email)', 'rules' => 'required|string'],
+                'password' => ['label' => 'SMTP password', 'rules' => 'required|string', 'secret' => true],
+            ],
+        ],
+        'brevo' => [
+            'label' => 'Brevo (Sendinblue)', 'description' => 'Delivery via Brevo SMTP relay', 'webhook' => null,
+            'smtp' => ['host' => 'smtp-relay.brevo.com', 'port' => 587, 'username' => 'username', 'password' => 'password'], 'spf' => 'spf.brevo.com',
+            'fields' => [
+                'username' => ['label' => 'SMTP login', 'rules' => 'required|string'],
+                'password' => ['label' => 'SMTP key', 'rules' => 'required|string', 'secret' => true],
+            ],
+        ],
+        'mailjet' => [
+            'label' => 'Mailjet', 'description' => 'Delivery via Mailjet SMTP relay', 'webhook' => null,
+            'smtp' => ['host' => 'in-v3.mailjet.com', 'port' => 587, 'username' => 'api_key', 'password' => 'secret_key'], 'spf' => 'spf.mailjet.com',
+            'fields' => [
+                'api_key' => ['label' => 'API key', 'rules' => 'required|string'],
+                'secret_key' => ['label' => 'Secret key', 'rules' => 'required|string', 'secret' => true],
+            ],
+        ],
+        'mailersend' => [
+            'label' => 'MailerSend', 'description' => 'Delivery via MailerSend SMTP', 'webhook' => null,
+            'smtp' => ['host' => 'smtp.mailersend.net', 'port' => 587, 'username' => 'username', 'password' => 'password'], 'spf' => '_spf.mailersend.net',
+            'fields' => [
+                'username' => ['label' => 'SMTP username', 'rules' => 'required|string'],
+                'password' => ['label' => 'SMTP password', 'rules' => 'required|string', 'secret' => true],
+            ],
+        ],
+        'zeptomail' => [
+            'label' => 'ZeptoMail (Zoho)', 'description' => 'Delivery via Zoho ZeptoMail SMTP', 'webhook' => null,
+            'smtp' => ['host' => 'smtp.zeptomail.com', 'port' => 587, 'username' => '=emailapikey', 'password' => 'token'], 'spf' => null,
+            'fields' => ['token' => ['label' => 'Send mail token', 'rules' => 'required|string', 'secret' => true]],
+        ],
     ];
 
     public const AWS_REGIONS = [
@@ -212,7 +262,7 @@ class SendingServer extends Model
     /** SMTP-based transports are signed by us; API providers sign with their own verified domain keys. */
     public function usesSmtp(): bool
     {
-        return in_array($this->type, ['smtp', 'ses-smtp', 'sendgrid-smtp', 'mailgun-smtp'], true);
+        return in_array($this->type, ['smtp', 'ses-smtp', 'sendgrid-smtp', 'mailgun-smtp'], true) || isset(self::TYPES[$this->type]['smtp']);
     }
 
     public function webhookProvider(): ?string
@@ -239,7 +289,7 @@ class SendingServer extends Model
             str_starts_with($this->type, 'ses') => 'amazonses.com',
             str_starts_with($this->type, 'sendgrid') => 'sendgrid.net',
             str_starts_with($this->type, 'mailgun') => 'mailgun.org',
-            default => null,
+            default => self::TYPES[$this->type]['spf'] ?? null,
         };
     }
 }

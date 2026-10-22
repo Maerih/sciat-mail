@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Form;
 use App\Models\Subscriber;
 use App\Sending\TrackingUrls;
+use App\Services\Captcha;
 use App\Services\QuotaExceeded;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
@@ -47,6 +48,11 @@ class SubscribeController extends Controller
         }
 
         $validator = Validator::make($request->all(), $rules, ['consent.accepted' => 'Please tick the consent box to subscribe.']);
+        $validator->after(function ($validator) use ($request) {
+            if (! Captcha::passes($request->input((string) Captcha::tokenField()), $request->ip())) {
+                $validator->errors()->add('captcha', 'Please confirm you are not a robot.');
+            }
+        });
         if ($validator->fails()) {
             if ($request->expectsJson()) {
                 return response()->json(['ok' => false, 'errors' => $validator->errors()], 422)->withHeaders(self::CORS);
