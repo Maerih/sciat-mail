@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Setting;
 use App\Models\Workspace;
 use App\Services\Branding;
+use App\Services\Requirements;
 use App\Services\SendingHealth;
 use App\Services\SystemMailConfig;
 use Illuminate\Http\RedirectResponse;
@@ -189,7 +190,8 @@ class SettingsController extends Controller
     protected function cronData(): array
     {
         $beat = fn (string $key) => ($v = Cache::get($key)) ? Carbon::parse($v) : null;
-        $php = PHP_BINARY ?: '/usr/bin/php';
+        // Under PHP-FPM/LiteSpeed PHP_BINARY is the web SAPI, not the CLI binary cron needs
+        $php = PHP_BINARY && ! preg_match('/fpm|lsphp|cgi/i', PHP_BINARY) ? PHP_BINARY : '/usr/local/bin/php';
         $size = null;
         try {
             $size = Queue::size();
@@ -200,6 +202,7 @@ class SettingsController extends Controller
         return [
             'command' => '* * * * * '.$php.' '.base_path('artisan').' schedule:run >> /dev/null 2>&1',
             'worker' => 'php '.base_path('artisan').' queue:work --tries=3 --timeout=900',
+            'cronWorker' => config('queue.cron_worker'),
             'scheduler' => $beat('heartbeat:scheduler'),
             'workerBeat' => $beat('heartbeat:worker'),
             'queueSize' => $size,
@@ -211,8 +214,13 @@ class SettingsController extends Controller
     /** @return array<string, mixed> */
     protected function systemData(): array
     {
-        $required = ['pdo_mysql', 'mbstring', 'openssl', 'curl', 'xml', 'zip', 'gd', 'intl', 'bcmath', 'fileinfo', 'redis'];
-        $version = trim((string) @shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse --short HEAD 2>/dev/null')) ?: 'unknown';
+        $required = Requirements::EXTENSIONS;
+        if (in_array('redis', [config('queue.default'), config('cache.default'), config('session.driver')], true)) {
+            $required[] = 'redis';
+        }
+        // shell_exec is often disabled on shared hosting
+        $version = function_exists('shell_exec') ? trim((string) @shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse --short HEAD 2>/dev/null')) : '';
+        $version = $version ?: (is_file(base_path('VERSION')) ? trim((string) file_get_contents(base_path('VERSION'))) : 'unknown');
         $free = @disk_free_space(storage_path());
 
         return [
@@ -231,7 +239,9 @@ class SettingsController extends Controller
                     'Cache store' => config('cache.default'),
                     'Queue connection' => config('queue.default'),
                     'Free disk space' => $free ? round($free / 1024 ** 3, 1).' GB' : 'unknown',
-                    'Public storage link' => is_link(public_path('storage')) ? 'OK' : 'Missing — run php artisan storage:link',
+                    'Public storage link' => is_link(public_path('storage')) ? 'OK' : 'Not linked — files are served by the app instead (slower; run php artisan storage:link if your host allows symlinks)',
+                    'Queue processing' => config('queue.cron_worker') ? 'Cron (shared hosting mode)' : 'Background worker',
+                    'Disabled PHP functions' => collect(['proc_open', 'exec', 'shell_exec', 'symlink', 'putenv'])->reject(fn ($f) => function_exists($f))->implode(', ') ?: 'None of the ones we use',
                 ],
             ],
             'extensions' => collect($required)->mapWithKeys(fn ($ext) => [$ext => extension_loaded($ext)])->all(),

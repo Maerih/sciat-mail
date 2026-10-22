@@ -3,6 +3,7 @@
 use App\Http\Controllers;
 use App\Http\Controllers\Public as Pub;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 | Public endpoints: tracking, unsubscribe, signup forms, provider webhooks.
@@ -25,9 +26,29 @@ Route::post('/subscribe/{form}', [Pub\SubscribeController::class, 'store'])->mid
 Route::get('/site/{uid}/connect.js', [Pub\SiteController::class, 'script'])->name('site.script');
 Route::post('/site/{uid}/collect', [Pub\SiteController::class, 'collect'])->middleware('throttle:120,1')->name('site.collect');
 
+// Hosts that forbid symlinks (no public/storage link): serve public uploads through the app
+if (! file_exists(public_path('storage'))) {
+    Route::get('/storage/{path}', function (string $path) {
+        abort_if(str_contains($path, '..') || ! Storage::disk('public')->exists($path), 404);
+
+        return Storage::disk('public')->response($path, null, ['Cache-Control' => 'public, max-age=604800']);
+    })->where('path', '.*')->name('storage.fallback');
+}
+
 Route::post('/webhooks/ses/{server}/{secret}', [Pub\WebhookController::class, 'ses'])->name('webhooks.ses');
 Route::post('/webhooks/sendgrid/{server}/{secret}', [Pub\WebhookController::class, 'sendgrid'])->name('webhooks.sendgrid');
 Route::post('/webhooks/mailgun/{server}/{secret}', [Pub\WebhookController::class, 'mailgun'])->name('webhooks.mailgun');
+
+/*
+| Web installer (only while APP_INSTALLER=true)
+*/
+Route::prefix('install')->name('install.')->controller(Controllers\InstallController::class)->group(function () {
+    Route::get('/', 'requirements')->name('requirements');
+    Route::get('database', 'database')->name('database');
+    Route::post('database', 'saveDatabase')->middleware('throttle:10,1')->name('database.save');
+    Route::get('admin', 'admin')->name('admin');
+    Route::post('admin', 'saveAdmin')->middleware('throttle:10,1')->name('admin.save');
+});
 
 /*
 | Team authentication

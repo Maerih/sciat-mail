@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // True on a fresh upload: every page leads to the web installer until it finishes
+    'installer' => (bool) env('APP_INSTALLER', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

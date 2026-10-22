@@ -16,6 +16,13 @@ return [
     'default' => env('QUEUE_CONNECTION', 'database'),
 
     /*
+    | Shared hosting has no process supervisor, so the scheduler (run by cron every
+    | minute) also works the queue for up to a minute at a time.
+    */
+
+    'cron_worker' => (bool) env('QUEUE_CRON_WORKER', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------
