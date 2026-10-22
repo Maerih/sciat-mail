@@ -283,7 +283,7 @@ class SettingsController extends Controller
             $required[] = 'redis';
         }
         // shell_exec is often disabled on shared hosting
-        $version = function_exists('shell_exec') ? trim((string) @shell_exec('git -C '.escapeshellarg(base_path()).' rev-parse --short HEAD 2>/dev/null')) : '';
+        $version = function_exists('shell_exec') ? trim((string) @shell_exec('git -C '.escapeshellarg(base_path()).' describe --tags --always 2>/dev/null')) : '';
         $version = $version ?: (is_file(base_path('VERSION')) ? trim((string) file_get_contents(base_path('VERSION'))) : 'unknown');
         $free = @disk_free_space(storage_path());
 

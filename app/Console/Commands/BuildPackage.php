@@ -36,7 +36,8 @@ class BuildPackage extends Command
             return self::FAILURE;
         }
 
-        $version = trim(Process::path(base_path())->run('git rev-parse --short HEAD')->output()).'-'.now()->format('Ymd');
+        // v1.0.0 on a tagged commit, v1.0.0-3-gabc1234 after it
+        $version = trim(Process::path(base_path())->run('git describe --tags --always')->output()) ?: now()->format('Ymd');
         $work = storage_path('app/package-build/'.Str::random(8));
         File::ensureDirectoryExists($work);
 

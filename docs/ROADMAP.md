@@ -1,5 +1,7 @@
 # SCIAT Mail — Roadmap & Phase 1 Spec
 
+> **Status:** all phases are complete and released as **version 1.0.0** (22 October 2026). See [CHANGELOG.md](CHANGELOG.md) and the [documentation index](README.md).
+
 Original mass-email platform for running client email programmes. Functional reference:
 Acelle Mail feature list (`../MAIL.pdf`), acellesend.com/kb, acellesend.com/developers and
 the public demo. No Acelle code is used — behaviour is re-implemented from scratch.
