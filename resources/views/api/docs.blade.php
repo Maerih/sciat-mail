@@ -39,6 +39,10 @@
             ['Transactional email', [
                 ['POST', '/send', 'Send one email now: receipts, password resets, alerts. Use "html", "text" or a template uid; "data" fills {{ TAGS }}.', '{"to":"ann@example.com","subject":"Your order #{{ ORDER }}","template":"TEMPLATE_UID","data":{"order":"1042"}}'],
             ]],
+            ['SMS', [
+                ['POST', '/sms', 'Send one SMS (OTP codes, alerts, reminders). Local numbers use the client\'s SMS country; returns 202 with the message id. Optional "sender" and "provider" (provider uid).', '{"to":"+254712345678","message":"Your code is 4821"}'],
+                ['GET', '/sms/{id}', 'Delivery status of an SMS: queued, sent, delivered or failed.', null],
+            ]],
         ];
     @endphp
 
