@@ -44,6 +44,7 @@
             ['Signatures', 'sending.signatures.index', 'draw', 'sending.signatures.*'],
         ]],
         ['Integration', array_values(array_filter([
+            ['All integrations', 'integrations.index', 'extension', 'integrations.*'],
             Route::has('websites.index') ? ['Websites', 'websites.index', 'public', 'websites.*'] : null,
             ['API & webhooks', 'api.settings', 'api', 'api.*'],
         ]))],

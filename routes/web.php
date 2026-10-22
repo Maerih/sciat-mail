@@ -180,6 +180,8 @@ Route::middleware(['auth', 'team'])->group(function () {
             Route::resource('providers', Controllers\SmsProviderController::class)->except(['show']);
         });
 
+        Route::get('integrations', [Controllers\IntegrationController::class, 'index'])->name('integrations.index');
+
         // Websites
         Route::resource('websites', Controllers\WebsiteController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
         Route::post('websites/{website}/verify', [Controllers\WebsiteController::class, 'verify'])->name('websites.verify');
