@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Setting;
 use App\Models\Workspace;
 use App\Services\Branding;
+use App\Services\DatabaseBackup;
 use App\Services\Requirements;
 use App\Services\SendingHealth;
 use App\Services\SystemMailConfig;
@@ -33,6 +34,7 @@ class SettingsController extends Controller
         'health' => ['Sending health', 'health_and_safety'],
         'ai' => ['AI assistant', 'auto_awesome'],
         'cron' => ['Cron & queue', 'schedule'],
+        'maintenance' => ['Maintenance', 'build'],
         'system' => ['System info', 'info'],
     ];
 
@@ -155,6 +157,47 @@ class SettingsController extends Controller
         return back()->with('success', 'Sending resumed for '.$workspace->name.'. Paused campaigns can be resumed from their pages.');
     }
 
+    public function maintenance(Request $request, DatabaseBackup $backups): RedirectResponse
+    {
+        $request->validate(['action' => ['required', Rule::in(['migrate', 'clear_cache', 'backup', 'backup_settings'])]]);
+
+        switch ($request->action) {
+            case 'migrate':
+                Artisan::call('migrate', ['--force' => true]);
+                Artisan::call('optimize:clear');
+
+                return back()->with('success', 'Database updated and caches cleared.');
+            case 'clear_cache':
+                Artisan::call('optimize:clear');
+
+                return back()->with('success', 'Caches cleared.');
+            case 'backup':
+                $path = $backups->create();
+
+                return back()->with('success', 'Backup created: '.basename($path).'.');
+            default:
+                $data = $request->validate(['backup_keep' => 'required|integer|between:1,60']);
+                Setting::put(['backups_enabled' => $request->boolean('backups_enabled') ? '1' : '0', 'backup_keep' => $data['backup_keep']]);
+
+                return back()->with('success', 'Backup settings saved.');
+        }
+    }
+
+    public function downloadBackup(string $name)
+    {
+        abort_unless(preg_match('/^backup-\d{8}-\d{6}\.sql\.gz$/', $name) && is_file(DatabaseBackup::directory().'/'.$name), 404);
+
+        return response()->download(DatabaseBackup::directory().'/'.$name);
+    }
+
+    public function deleteBackup(string $name): RedirectResponse
+    {
+        abort_unless(preg_match('/^backup-\d{8}-\d{6}\.sql\.gz$/', $name), 404);
+        @unlink(DatabaseBackup::directory().'/'.$name);
+
+        return back()->with('success', 'Backup deleted.');
+    }
+
     public function cron(Request $request): RedirectResponse
     {
         $request->validate(['action' => ['required', Rule::in(['retry_failed', 'flush_failed'])]]);
@@ -181,6 +224,13 @@ class SettingsController extends Controller
                 'workspaces' => Workspace::orderBy('name')->get()->map(fn (Workspace $w) => ['workspace' => $w, 'health' => SendingHealth::measure($w)]),
             ],
             'cron' => $this->cronData(),
+            'maintenance' => [
+                'pending' => DatabaseBackup::pendingMigrations(),
+                'backups' => DatabaseBackup::all(),
+                'backupsEnabled' => Setting::bool('backups_enabled', true),
+                'backupKeep' => (int) Setting::get('backup_keep', 7),
+                'version' => is_file(base_path('VERSION')) ? trim((string) file_get_contents(base_path('VERSION'))) : null,
+            ],
             'system' => $this->systemData(),
             default => [],
         };

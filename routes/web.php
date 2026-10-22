@@ -95,6 +95,9 @@ Route::middleware(['auth', 'team'])->group(function () {
         Route::post('/settings/health/{workspace}/lift', [Controllers\SettingsController::class, 'liftSuspension'])->name('settings.health.lift');
         Route::post('/settings/mail/test', [Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');
         Route::post('/settings/cron', [Controllers\SettingsController::class, 'cron'])->name('settings.cron');
+        Route::post('/settings/maintenance', [Controllers\SettingsController::class, 'maintenance'])->name('settings.maintenance');
+        Route::get('/settings/backups/{name}', [Controllers\SettingsController::class, 'downloadBackup'])->name('settings.backups.download');
+        Route::delete('/settings/backups/{name}', [Controllers\SettingsController::class, 'deleteBackup'])->name('settings.backups.delete');
         Route::get('/settings/{tab}', [Controllers\SettingsController::class, 'show'])->name('settings.show');
         Route::get('/platform/ai', [Controllers\AiController::class, 'settings'])->name('platform.ai');
         Route::put('/platform/ai', [Controllers\AiController::class, 'saveSettings'])->name('platform.ai.update');

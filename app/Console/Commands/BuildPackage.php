@@ -15,7 +15,7 @@ use ZipArchive;
  * Builds a zip for hosting without a terminal: committed code, production dependencies,
  * built assets and a fresh .env that starts the web installer.
  */
-#[Signature('app:package {--allow-dirty : Package even with uncommitted changes}')]
+#[Signature('app:package {--update : Build an update zip without .env and storage, for uploading over a live site} {--allow-dirty : Package even with uncommitted changes}')]
 #[Description('Build an upload-ready zip for shared hosting (runs the web installer on first visit)')]
 class BuildPackage extends Command
 {
@@ -48,11 +48,13 @@ class BuildPackage extends Command
                 ->run('composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --no-progress')->throw());
             $this->components->task('Writing production configuration', fn () => $this->writeProductionConfig($work, $version));
 
-            foreach (self::EXCLUDE as $path) {
+            // An update must never overwrite the live site's settings or uploads
+            $exclude = $this->option('update') ? [...self::EXCLUDE, '.env', 'storage'] : self::EXCLUDE;
+            foreach ($exclude as $path) {
                 File::isDirectory("{$work}/{$path}") ? File::deleteDirectory("{$work}/{$path}") : File::delete("{$work}/{$path}");
             }
 
-            $zip = storage_path("app/packages/sciat-mail-{$version}.zip");
+            $zip = storage_path('app/packages/sciat-mail-'.($this->option('update') ? 'update-' : '').$version.'.zip');
             $this->components->task('Creating zip', fn () => $this->zip($work, $zip));
         } finally {
             File::deleteDirectory($work);

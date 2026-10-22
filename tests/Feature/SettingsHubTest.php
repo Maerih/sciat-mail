@@ -36,7 +36,7 @@ class SettingsHubTest extends TestCase
     {
         $this->signInTo($this->workspace, 'admin');
 
-        foreach (['general', 'mail', 'sending', 'health', 'cron', 'system'] as $tab) {
+        foreach (['general', 'mail', 'sending', 'health', 'cron', 'maintenance', 'system'] as $tab) {
             $this->get(route('settings.show', $tab))->assertOk()->assertSee('Settings');
         }
         $this->get(route('settings.show', 'ai'))->assertRedirect(route('platform.ai'));

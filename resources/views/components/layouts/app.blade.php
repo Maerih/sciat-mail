@@ -151,6 +151,12 @@
     </header>
 
     <main class="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        @if (auth()->user()->isAdmin() && Route::has('settings.maintenance') && \App\Services\DatabaseBackup::pendingMigrations())
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                <span class="flex items-center gap-2"><x-icon name="system_update" class="size-5" /> A new version was uploaded — apply its database changes to finish the update.</span>
+                <a href="{{ route('settings.show', 'maintenance') }}" class="btn-primary btn-sm">Review update</a>
+            </div>
+        @endif
         @php $suspendedWorkspace = \App\Models\Workspace::current(); @endphp
         @if ($suspendedWorkspace?->isSuspended())
             <div class="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
