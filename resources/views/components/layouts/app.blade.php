@@ -21,7 +21,9 @@
             ['Templates', 'templates.index', 'dashboard_customize', 'templates.*'],
         ]],
         ['Audience', [
+            ['Overview', 'audience.overview', 'monitoring', 'audience.overview'],
             ['Lists', 'lists.index', 'format_list_bulleted', 'lists.*'],
+            ['Subscribers', 'audience.subscribers', 'group', 'audience.subscribers'],
             ['Forms', 'forms.index', 'edit_note', 'forms.*'],
         ]],
         ['Sending', [

@@ -63,6 +63,17 @@ class AccessAndPagesTest extends TestCase
         $this->assertModelExists($theirSubscriber);
     }
 
+    public function test_audience_pages_only_show_the_current_clients_subscribers(): void
+    {
+        $mine = Workspace::factory()->create();
+        Subscriber::factory()->for(MailList::factory()->for($mine)->create(), 'list')->create(['email' => 'mine@example.com']);
+        Subscriber::factory()->for(MailList::factory()->create(), 'list')->create(['email' => 'theirs@example.com']);
+        $this->signInTo($mine);
+
+        $this->get(route('audience.subscribers'))->assertOk()->assertSee('mine@example.com')->assertDontSee('theirs@example.com');
+        $this->get(route('audience.overview'))->assertOk()->assertSee('Supercharge your audience growth');
+    }
+
     public function test_subscriber_must_belong_to_the_list_in_the_url(): void
     {
         $workspace = Workspace::factory()->create();
@@ -209,6 +220,8 @@ class AccessAndPagesTest extends TestCase
             route('sending.blacklist.index'), route('workspaces.edit'), route('workspaces.index'), route('team.index'), route('profile.edit'),
             route('automations.index'), route('automations.create'), route('sending.warmup.index'), route('sending.warmup.create'),
             route('sending.verification.index'), route('sending.bounce-handlers.index'), route('campaigns.builder', $draft),
+            route('audience.overview'), route('audience.subscribers'), route('audience.subscribers', ['q' => 'example', 'status' => 'subscribed', 'list' => $list->uid]),
+            route('websites.index'), route('websites.create'),
         ];
         foreach (array_keys(SendingServer::TYPES) as $type) {
             $pages[] = route('sending.servers.create', ['type' => $type]);

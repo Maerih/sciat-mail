@@ -1,5 +1,7 @@
 <x-layouts.app title="Sending domains">
     <x-page-header title="Sending domains" subtitle="Authenticate the domains this client sends from. Verified domains get DKIM-signed mail and better inbox placement." />
+    <x-banner icon="verified_user" title="Authenticate your sending domains" text="SPF, DKIM and DMARC prove your emails really come from you. Gmail and Yahoo require them for bulk senders — verified domains land in the inbox, not spam."
+        :stats="[['dns', $domains->count().' domains'], ['verified', $domains->filter->isVerified()->count().' verified'], ['pending', $domains->reject->isVerified()->count().' pending DNS']]" />
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="card lg:col-span-2">
             @if ($domains->isEmpty())

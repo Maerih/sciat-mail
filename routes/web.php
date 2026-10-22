@@ -109,6 +109,8 @@ Route::middleware(['auth', 'team'])->group(function () {
         Route::delete('/developers/webhooks/{webhook}', [Controllers\ApiSettingsController::class, 'destroyWebhook'])->name('api.webhooks.destroy');
 
         // Lists & subscribers
+        Route::get('audience', [Controllers\AudienceController::class, 'overview'])->name('audience.overview');
+        Route::get('audience/subscribers', [Controllers\AudienceController::class, 'subscribers'])->name('audience.subscribers');
         Route::resource('lists', Controllers\ListController::class)->except(['show']);
         Route::prefix('lists/{list}')->name('lists.')->scopeBindings()->group(function () {
             Route::get('/', [Controllers\ListController::class, 'show'])->name('show');

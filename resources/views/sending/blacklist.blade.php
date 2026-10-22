@@ -1,5 +1,7 @@
 <x-layouts.app title="Blacklist">
     <x-page-header title="Blacklist" subtitle="Suppressed addresses never receive campaigns. Hard bounces and spam complaints are added automatically." />
+    <x-banner icon="block" title="Protect your sender reputation" text="Blacklisted addresses are skipped by every campaign. Hard bounces and spam complaints land here automatically, so you never mail them twice."
+        :stats="[['person_off', number_format($entries->total()).' blocked addresses'], ['public', 'Global entries apply to every client']]" />
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="card lg:col-span-2">
             <form class="flex flex-wrap gap-2 border-b border-gray-100 p-3">

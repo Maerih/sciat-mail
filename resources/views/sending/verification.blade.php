@@ -1,5 +1,7 @@
 <x-layouts.app title="Email verification">
     <x-page-header title="Email verification" subtitle="Clean lists before sending: undeliverable addresses are skipped by every campaign, protecting this client's sender reputation." />
+    <x-banner icon="mark_email_read" title="Verify before you send" text="Remove invalid, disposable and risky addresses before a campaign goes out. Fewer bounces means better inbox placement for everyone on your servers."
+        :stats="[['dns', $servers->count().' verification services'], ['check_circle', $active ? 'Using '.e($active->name) : 'No active service']]" />
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
             <div class="card card-body">

@@ -1,5 +1,7 @@
 <x-layouts.app title="Tracking domains">
     <x-page-header title="Tracking domains" subtitle="Open, click and unsubscribe links use this client's own domain instead of the platform's, so its reputation stays its own." />
+    <x-banner icon="ads_click" title="Brand your tracking links" text="Open pixels, click redirects and unsubscribe links use your own domain, so links look trustworthy and your reputation is never shared with anyone else."
+        :stats="[['link', $domains->count().' domains'], ['verified', $domains->where('verified', true)->count().' verified'], ['star', $domains->firstWhere('is_default', true)?->host ?? 'No default yet']]" />
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="card lg:col-span-2">
             @if ($domains->isEmpty())

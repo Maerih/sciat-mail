@@ -2,6 +2,8 @@
     <x-page-header title="IP warmup" subtitle="Ramp up sending volume on new IPs and domains so mailbox providers learn to trust them.">
         <x-slot:actions><a href="{{ route('sending.warmup.create') }}" class="btn-primary"><x-icon name="plus" /> New strategy</a></x-slot:actions>
     </x-page-header>
+    <x-banner icon="local_fire_department" title="Warm up new IPs and domains" text="New senders have no reputation. A warmup plan raises the daily volume gradually so Gmail, Outlook and Yahoo learn to trust your servers."
+        :stats="[['tune', $strategies->count().' strategies'], ['dns', $servers->filter->isWarmingUp()->count().' servers warming up']]" />
 
     @if ($servers->isNotEmpty())
         <div class="card mb-6 overflow-x-auto">

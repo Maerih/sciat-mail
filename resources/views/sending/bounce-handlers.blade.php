@@ -1,5 +1,7 @@
 <x-layouts.app title="Bounce handlers">
     <x-page-header title="Bounce handlers" subtitle="For SMTP servers: bounce and spam-complaint reports are read from these mailboxes every 5 minutes. Amazon SES, SendGrid and Mailgun report through webhooks instead." />
+    <x-banner icon="move_to_inbox" title="Catch every bounce" text="Bounce handlers read the return-path mailboxes of your SMTP servers, classify hard and soft bounces and complaints, and keep your lists clean."
+        :stats="[['inbox', $handlers->count().' mailboxes'], ['dns', $servers->count().' SMTP servers'], ['schedule', 'Checked every 5 minutes']]" />
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="space-y-6 lg:col-span-2">
             <div class="card overflow-x-auto">
