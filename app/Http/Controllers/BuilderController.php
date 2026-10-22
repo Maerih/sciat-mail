@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Automation;
 use App\Models\Campaign;
+use App\Models\Signature;
 use App\Models\Template;
 use App\Models\Workspace;
 use App\Sending\MergeTags;
@@ -85,6 +86,7 @@ class BuilderController extends Controller
     protected function editor(string $title, ?string $html, ?string $project, string $saveUrl, string $backUrl, array $tags): View
     {
         $assets = collect(Storage::disk('public')->files('uploads/'.Workspace::current()->uid))
+            ->filter(fn ($p) => in_array(strtolower(pathinfo($p, PATHINFO_EXTENSION)), AssetController::IMAGE_EXTENSIONS, true))
             ->map(fn ($p) => url(Storage::disk('public')->url($p)))->values();
 
         return view('builder', [
@@ -95,6 +97,7 @@ class BuilderController extends Controller
             'backUrl' => $backUrl,
             'tags' => $tags,
             'assets' => $assets,
+            'signatures' => Signature::forWorkspace()->orderByDesc('is_default')->orderBy('name')->get(['name', 'html']),
             'uploadUrl' => route('builder.upload'),
         ]);
     }

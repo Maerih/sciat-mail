@@ -43,6 +43,12 @@ bm.add('sm-footer', {
     content: '<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td style="padding:20px;text-align:center;font-family:Arial,sans-serif;font-size:12px;line-height:1.6;color:#6b7280;background:#f9fafb">'
         + 'You received this email because you subscribed to {{ LIST_NAME }}.<br>{{ CONTACT_ADDRESS }}<br><a href="{{ UNSUBSCRIBE_URL }}" style="color:#6b7280">Unsubscribe</a></td></tr></table>',
 });
+bm.add('sm-signature', {
+    label: 'Default signature', category: 'Signatures',
+    content: '<div style="font-family:Arial,sans-serif;font-size:14px;margin:16px 0">{{ SIGNATURE }}</div>',
+});
+// A copy of each saved signature, editable inside this email
+(cfg.signatures || []).forEach((signature, i) => bm.add('sm-signature-' + i, { label: signature.name, category: 'Signatures', content: signature.html }));
 
 // Load the saved design, or import existing HTML (head <style> blocks become editable CSS)
 if (cfg.project) {

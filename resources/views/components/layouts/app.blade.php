@@ -19,6 +19,7 @@
             ['Email', 'campaigns.index', 'mail', 'campaigns.*'],
             ['Automation', 'automations.index', 'account_tree', 'automations.*'],
             ['Templates', 'templates.index', 'dashboard_customize', 'templates.*'],
+            ['Assets', 'assets.index', 'perm_media', 'assets.*'],
         ]],
         ['Audience', [
             ['Overview', 'audience.overview', 'monitoring', 'audience.overview'],
@@ -34,6 +35,7 @@
             ['Email verification', 'sending.verification.index', 'verified', 'sending.verification.*'],
             ['Bounce handlers', 'sending.bounce-handlers.index', 'move_to_inbox', 'sending.bounce-handlers.*'],
             ['Blacklist', 'sending.blacklist.index', 'block', 'sending.blacklist.*'],
+            ['Signatures', 'sending.signatures.index', 'draw', 'sending.signatures.*'],
         ]],
         ['Integration', array_values(array_filter([
             Route::has('websites.index') ? ['Websites', 'websites.index', 'public', 'websites.*'] : null,

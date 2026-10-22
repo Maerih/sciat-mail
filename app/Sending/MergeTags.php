@@ -12,7 +12,7 @@ use App\Models\Subscriber;
 class MergeTags
 {
     /** Tags whose values are trusted HTML rendered by the platform. */
-    public const RAW_HTML = ['RSS_ITEMS'];
+    public const RAW_HTML = ['RSS_ITEMS', 'SIGNATURE'];
 
     public static function render(string $content, array $values, bool $escape = true): string
     {
@@ -23,6 +23,11 @@ class MergeTags
             $value = (string) ($values[$m[1]] ?? '');
             if ($value === '' && isset($m[2])) {
                 $value = $m[2];
+            }
+
+            // Plain-text bodies get the text of HTML blocks
+            if (! $escape && in_array($m[1], self::RAW_HTML, true)) {
+                return trim(html_entity_decode(strip_tags(preg_replace('#<br\s*/?>|</(p|div|tr|li)>#i', "\n", $value))));
             }
 
             // URLs and pre-rendered HTML blocks are inserted raw; everything else is escaped for HTML bodies
@@ -55,6 +60,7 @@ class MergeTags
             'CAMPAIGN_NAME' => 'Campaign name',
             'CONTACT_ADDRESS' => 'Postal address',
             'CURRENT_YEAR' => 'Current year',
+            'SIGNATURE' => 'Default email signature',
             'RSS_ITEMS' => 'RSS: latest posts (needs a feed)',
             'RSS_LATEST_TITLE' => 'RSS: newest post title',
             'RSS_LATEST_URL' => 'RSS: newest post link',

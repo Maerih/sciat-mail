@@ -7,7 +7,7 @@
     @vite(['resources/css/app.css'])
     <script>
         window.builderConfig = {!! json_encode(['html' => $html, 'project' => $project, 'saveUrl' => $saveUrl, 'backUrl' => $backUrl,
-            'uploadUrl' => $uploadUrl, 'assets' => $assets, 'csrf' => csrf_token()], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES) !!};
+            'uploadUrl' => $uploadUrl, 'assets' => $assets, 'signatures' => $signatures, 'csrf' => csrf_token()], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES) !!};
     </script>
     @vite(['resources/js/builder.js'])
 </head>

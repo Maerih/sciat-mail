@@ -195,6 +195,9 @@ Route::middleware(['auth', 'team'])->group(function () {
         Route::post('builder/upload', [Controllers\BuilderController::class, 'upload'])->name('builder.upload');
 
         Route::resource('templates', Controllers\TemplateController::class)->except(['show']);
+        Route::get('assets', [Controllers\AssetController::class, 'index'])->name('assets.index');
+        Route::post('assets', [Controllers\AssetController::class, 'store'])->name('assets.store');
+        Route::delete('assets/{name}', [Controllers\AssetController::class, 'destroy'])->name('assets.destroy');
         Route::get('templates/{template}/preview', [Controllers\TemplateController::class, 'preview'])->name('templates.preview');
 
         // Sending infrastructure
@@ -210,6 +213,8 @@ Route::middleware(['auth', 'team'])->group(function () {
             Route::post('tracking-domains/{trackingDomain}/default', [Controllers\TrackingDomainController::class, 'makeDefault'])->name('tracking-domains.default');
             Route::resource('tracking-domains', Controllers\TrackingDomainController::class)->only(['index', 'store', 'destroy']);
 
+            Route::post('signatures/{signature}/default', [Controllers\SignatureController::class, 'makeDefault'])->name('signatures.default');
+            Route::resource('signatures', Controllers\SignatureController::class)->except(['show']);
             Route::resource('blacklist', Controllers\BlacklistController::class)->only(['index', 'store', 'destroy']);
             Route::resource('warmup', Controllers\WarmupStrategyController::class)->except(['show']);
             Route::post('bounce-handlers/{bounceHandler}/check', [Controllers\BounceHandlerController::class, 'check'])->name('bounce-handlers.check');

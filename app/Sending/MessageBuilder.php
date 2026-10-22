@@ -7,6 +7,7 @@ use App\Models\Delivery;
 use App\Models\SendingDomain;
 use App\Models\SendingServer;
 use App\Models\Setting;
+use App\Models\Signature;
 use App\Models\Subscriber;
 use App\Services\RssFeed;
 use Symfony\Component\Mailer\Header\MetadataHeader;
@@ -84,6 +85,7 @@ class MessageBuilder
             'CAMPAIGN_NAME' => $campaign->name,
             'CONTACT_ADDRESS' => $list?->postalAddress() ?? (string) $campaign->workspace->address,
             'CURRENT_YEAR' => date('Y'),
+            'SIGNATURE' => Signature::defaultFor($campaign->workspace_id)?->html ?? '',
         ] + app(RssFeed::class)->mergeValues($campaign->rssConfig());
     }
 
