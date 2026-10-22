@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2 — 22 October 2026
+- One package for everything: the zip ships `.env.install` instead of `.env`. On a new installation the
+  start-up check turns it into `.env` (fresh app key, installer on); on updates the existing `.env` is kept.
+- The start-up check creates missing `storage/` and `bootstrap/cache/` folders automatically.
+- No separate "update" zip any more (it omitted `storage/`, which broke installs made from it).
+
 ## 1.1.1 — 22 October 2026
 - Start-up check (`public/preflight.php`): instead of a generic "500 / Oops" page, explains a too-old PHP,
   missing PHP extensions or unwritable folders — common after switching PHP version in cPanel.

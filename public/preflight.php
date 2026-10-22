@@ -24,8 +24,19 @@ foreach (['storage', 'storage/app', 'storage/app/public', 'storage/app/private',
     }
 }
 
-if (! is_file(__DIR__.'/../.env')) {
-    $sciatProblems[] = 'The settings file “.env” is missing. For a new installation upload the full package (sciat-mail-vX.zip, not the “update” zip); when updating, extract the update over your existing folder so its .env is kept. In File Manager, enable “Show Hidden Files” to see it.';
+// First visit of a new installation: create .env from the packaged template (it holds a fresh
+// app key and turns on the web installer). Existing installations keep their own .env.
+$sciatEnv = __DIR__.'/../.env';
+$sciatTemplate = __DIR__.'/../.env.install';
+if (! is_file($sciatEnv) && is_file($sciatTemplate) && @copy($sciatTemplate, $sciatEnv)) {
+    @chmod($sciatEnv, 0640);
+}
+if (is_file($sciatEnv) && is_file($sciatTemplate)) {
+    @unlink($sciatTemplate); // its key is no longer needed
+}
+
+if (! is_file($sciatEnv)) {
+    $sciatProblems[] = 'The settings file “.env” is missing and could not be created. Make sure the hidden files .env.install and .htaccess were uploaded (File Manager → Settings → Show Hidden Files) and that the application folder is writable.';
 }
 
 if ($sciatProblems) {

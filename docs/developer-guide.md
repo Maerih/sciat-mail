@@ -60,7 +60,7 @@ via `/webhooks/sms/{provider}/{secret}/{status|inbound}`.
 Most other settings live in the database (`settings` table) and are edited in **Settings**.
 
 ## Commands
-`app:package [--update]` · `app:backup` · `campaigns:dispatch-scheduled` · `automations:tick` ·
+`app:package` · `app:backup` · `campaigns:dispatch-scheduled` · `automations:tick` ·
 `bounces:fetch` · `health:check` · `warmup:send` · `warmup:check` · `events:backfill-devices`
 
 ## Tests
@@ -71,5 +71,5 @@ php artisan test --compact --filter=Sms  # one area
 External services are faked (`Http::fake`, fake mail transport, fake IMAP inbox).
 
 ## Building releases
-`npm run build && php artisan app:package` (fresh install) or `--update` (over a live site).
+`npm run build && php artisan app:package` — one zip for new installs and updates (it ships `.env.install`, which `public/preflight.php` turns into `.env` only on a new install).
 The package version is `git describe --tags`; tag releases (`git tag v1.0.0`).

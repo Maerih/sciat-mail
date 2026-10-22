@@ -19,8 +19,9 @@ npm run build
 php artisan app:package
 ```
 This creates `storage/app/packages/sciat-mail-<version>.zip` containing the code, production
-dependencies, built assets, a fresh `.env` (with a new APP_KEY and `APP_INSTALLER=true`) and a
-safe root `.htaccess`.
+dependencies, built assets, a `.env.install` template (new APP_KEY, `APP_INSTALLER=true`) and a safe
+root `.htaccess`. On the first visit `.env.install` becomes `.env` and the installer opens; the same
+zip is used for updates later.
 
 ### 2. Prepare the hosting
 1. **Select PHP Version** → **8.4**; tick the extensions above (they are saved per PHP version — re-tick them if you ever switch version).
@@ -79,10 +80,10 @@ php artisan migrate --force && php artisan db:seed --force && php artisan storag
 - First admin: set `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env` before `db:seed`, or use the web installer.
 
 ## Updating
-1. On the development machine: commit, `npm run build`, `php artisan app:package --update`.
+1. On the development machine: commit, `npm run build`, `php artisan app:package`.
 2. In the platform: **Settings → Maintenance → Back up now** and download the backup.
-3. Upload `sciat-mail-update-<version>.zip` and extract it over the existing folder. It never
-   contains `.env` (settings are kept); its `storage/` holds only empty folders, so uploads are kept too.
+3. Upload the same `sciat-mail-<version>.zip` and extract it over the existing folder. It contains no
+   `.env` (only a `.env.install` template used on new installs), so your settings and uploads are kept.
 4. A banner appears for administrators: **Settings → Maintenance → Apply update** (runs the
    database migrations and clears caches).
 

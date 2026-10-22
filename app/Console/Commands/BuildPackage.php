@@ -13,9 +13,10 @@ use ZipArchive;
 
 /**
  * Builds a zip for hosting without a terminal: committed code, production dependencies,
- * built assets and a fresh .env that starts the web installer.
+ * built assets and a .env.install template. The same zip installs a new site (the template becomes
+ * .env and starts the web installer) and updates an existing one (its .env is never touched).
  */
-#[Signature('app:package {--update : Build an update zip without .env and storage, for uploading over a live site} {--allow-dirty : Package even with uncommitted changes}')]
+#[Signature('app:package {--update : Kept for compatibility — every package now installs and updates} {--allow-dirty : Package even with uncommitted changes}')]
 #[Description('Build an upload-ready zip for shared hosting (runs the web installer on first visit)')]
 class BuildPackage extends Command
 {
@@ -49,14 +50,12 @@ class BuildPackage extends Command
                 ->run('composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --no-progress')->throw());
             $this->components->task('Writing production configuration', fn () => $this->writeProductionConfig($work, $version));
 
-            // An update must never overwrite the live site's settings. storage/ only holds empty
-            // placeholder folders here, so it is kept: extracting never removes existing files.
-            $exclude = $this->option('update') ? [...self::EXCLUDE, '.env'] : self::EXCLUDE;
+            $exclude = self::EXCLUDE;
             foreach ($exclude as $path) {
                 File::isDirectory("{$work}/{$path}") ? File::deleteDirectory("{$work}/{$path}") : File::delete("{$work}/{$path}");
             }
 
-            $zip = storage_path('app/packages/sciat-mail-'.($this->option('update') ? 'update-' : '').$version.'.zip');
+            $zip = storage_path("app/packages/sciat-mail-{$version}.zip");
             $this->components->task('Creating zip', fn () => $this->zip($work, $zip));
         } finally {
             File::deleteDirectory($work);
@@ -70,7 +69,8 @@ class BuildPackage extends Command
 
     protected function writeProductionConfig(string $work, string $version): void
     {
-        $env = "{$work}/.env";
+        // Never ship a live .env: public/preflight.php copies this template only when none exists
+        $env = "{$work}/.env.install";
         $example = (string) file_get_contents("{$work}/.env.example");
         // Drop the seeder-only admin block; the installer creates the administrator
         file_put_contents($env, preg_replace('/\n# First administrator.*$/s', "\n", $example));
