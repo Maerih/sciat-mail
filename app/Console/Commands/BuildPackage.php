@@ -94,12 +94,11 @@ class BuildPackage extends Command
         // Even without mod_rewrite, never serve .env, logs, code or dependencies from the app root
         file_put_contents("{$work}/.htaccess", implode("\n", [
             'Options -Indexes',
-            '<FilesMatch "^\\.|\\.(env|log|sql|gz|lock|json|md|xml)$|^artisan$">',
+            '<FilesMatch "^\\.|\\.(env|log|sql|gz|lock)$|^artisan$">',
             '    Require all denied',
             '</FilesMatch>',
             '<IfModule mod_rewrite.c>',
             '    RewriteEngine On',
-            '    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|vendor)(/|$) - [F,L]',
             '    RewriteRule ^(.*)$ public/$1 [L]',
             '</IfModule>',
         ])."\n");
