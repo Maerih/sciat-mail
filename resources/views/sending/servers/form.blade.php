@@ -31,6 +31,7 @@
                     <div x-show="strategy" x-cloak>
                         <x-field name="warmup_started_on" type="date" label="Warmup started on" :value="$server->warmup_started_on?->toDateString()" help="Leave empty to start today." />
                     </div>
+                    <div class="sm:col-span-2"><x-toggle name="prewarmed" label="Pre-warmed server" help="This server (or its IP) already has a sending reputation — e.g. a pre-warmed SMTP service. Warmup limits are skipped and full volume is allowed from day one." :checked="$server->prewarmed" /></div>
                     @if ($server->isWarmingUp())
                         <p class="text-sm text-amber-700 sm:col-span-2">Warming up: day {{ $server->warmupDay() }} of {{ $server->warmupStrategy->days }} · today's quota {{ number_format($server->effectiveDailyLimit()) }} emails.</p>
                     @endif

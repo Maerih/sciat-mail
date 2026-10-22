@@ -4,10 +4,12 @@ namespace App\Jobs;
 
 use App\Models\Campaign;
 use App\Models\Delivery;
+use App\Models\SendingDomain;
 use App\Sending\Dispatcher;
 use App\Sending\MessageBuilder;
 use App\Sending\SendFailed;
 use App\Sending\ServerPicker;
+use App\Sending\Throttle;
 use App\Services\Quota;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -56,6 +58,9 @@ class SendCampaignBatch implements ShouldQueue
         }
 
         $remaining = Quota::emailsRemaining($campaign->workspace);
+        $domain = SendingDomain::forEmail((string) $campaign->from_email, $campaign->workspace_id);
+        $domain = $domain?->isWarmingUp() ? $domain : null;
+        $throttle = app(Throttle::class);
 
         $deliveries = Delivery::with('subscriber.list.fields', 'workspace', 'campaign')
             ->whereIn('id', $this->deliveryIds)->where('status', 'pending')->orderBy('id')->get();
@@ -67,6 +72,13 @@ class SendCampaignBatch implements ShouldQueue
 
             if ($remaining !== null && $remaining <= 0) {
                 $campaign->forceFill(['status' => 'paused', 'last_error' => 'The client\'s monthly email limit was reached. Raise the limit or resume next month.'])->save();
+
+                return;
+            }
+
+            if ($domain && ! $throttle->domainHasCapacity($domain)) {
+                // the sending domain used up today's warmup allowance: continue tomorrow
+                $this->release(86400 - (now()->getTimestamp() % 86400) + 60);
 
                 return;
             }
@@ -92,6 +104,7 @@ class SendCampaignBatch implements ShouldQueue
                 $message = $builder->forCampaign($version, $delivery, $delivery->subscriber, $server);
                 $messageId = $dispatcher->send($message, $server, $campaign->from_email, $delivery->email);
                 $delivery->forceFill(['status' => 'sent', 'sent_at' => now(), 'provider_message_id' => $messageId, 'error' => null])->save();
+                $domain && $throttle->hitDomain($domain);
                 if ($remaining !== null) {
                     $remaining--;
                 }

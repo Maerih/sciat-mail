@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SendingDomain;
+use App\Models\WarmupStrategy;
 use App\Models\Workspace;
 use App\Services\DomainVerifier;
 use Illuminate\Http\RedirectResponse;
@@ -35,7 +36,23 @@ class SendingDomainController extends Controller
         $spfIncludes = Workspace::current()->availableServers()->where('status', 'active')->get()
             ->map->spfInclude()->filter()->unique()->values();
 
-        return view('sending.domains.show', compact('domain', 'spfIncludes'));
+        $strategies = WarmupStrategy::availableTo(Workspace::current())->orderBy('name')->get();
+
+        return view('sending.domains.show', compact('domain', 'spfIncludes', 'strategies'));
+    }
+
+    public function warmup(Request $request, SendingDomain $domain): RedirectResponse
+    {
+        $data = $request->validate([
+            'warmup_strategy_id' => ['nullable', 'integer', Rule::in(WarmupStrategy::availableTo(Workspace::current())->pluck('id')->all())],
+            'warmup_started_on' => 'nullable|date',
+        ]);
+        $domain->forceFill([
+            'warmup_strategy_id' => $data['warmup_strategy_id'] ?? null,
+            'warmup_started_on' => empty($data['warmup_strategy_id']) ? null : ($data['warmup_started_on'] ?? now(Workspace::current()->timezone)->toDateString()),
+        ])->save();
+
+        return back()->with('success', empty($data['warmup_strategy_id']) ? 'Domain warmup turned off.' : 'Domain warmup scheduled.');
     }
 
     public function verify(SendingDomain $domain, DomainVerifier $verifier): RedirectResponse

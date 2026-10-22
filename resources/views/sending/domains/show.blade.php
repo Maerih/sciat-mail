@@ -30,6 +30,22 @@
                 </div>
             </div>
         @endforeach
+        <form method="POST" action="{{ route('sending.domains.warmup', $domain) }}" class="card card-body space-y-4" x-data="{ strategy: @js((string) $domain->warmup_strategy_id) }">
+            @csrf @method('PUT')
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div><h2 class="card-title">Domain warmup</h2><p class="text-sm text-[var(--muted)]">A new domain has no reputation yet. Limit how many emails it sends per day — across all servers — and raise the limit gradually.</p></div>
+                @if ($domain->isWarmingUp())<span class="badge-yellow">Day {{ $domain->warmupDay() }} of {{ $domain->warmupStrategy->days }} · {{ number_format($domain->dailyAllowance()) }} today</span>@endif
+            </div>
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="sm:col-span-2"><label class="label">Warmup strategy</label>
+                    <select name="warmup_strategy_id" class="input" x-model="strategy">
+                        <option value="">No domain warmup</option>
+                        @foreach ($strategies as $strategy)<option value="{{ $strategy->id }}">{{ $strategy->name }} ({{ number_format($strategy->initial_daily) }} → {{ number_format($strategy->target_daily) }}/day over {{ $strategy->days }} days)</option>@endforeach
+                    </select></div>
+                <div x-show="strategy" x-cloak><x-field name="warmup_started_on" type="date" label="Started on" :value="$domain->warmup_started_on?->toDateString()" help="Empty = today." /></div>
+            </div>
+            <div class="flex items-center justify-between"><a href="{{ route('sending.warmup.index') }}" class="text-sm text-brand-600 hover:underline">Manage strategies</a><button class="btn-secondary">Save warmup</button></div>
+        </form>
         <p class="text-sm text-gray-500">Using Amazon SES, SendGrid or Mailgun? Also verify the domain inside that provider's console — they sign with their own DKIM keys. Some DNS hosts append the domain automatically: enter only the part before <code>.{{ $domain->name }}</code> as the host if so.</p>
     </div>
 </x-layouts.app>

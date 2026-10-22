@@ -11,6 +11,8 @@ use App\Services\Bounces\Mailbox;
 use App\Services\Dns\DnsResolver;
 use App\Services\Dns\SystemDnsResolver;
 use App\Services\SystemMailConfig;
+use App\Services\Warmup\ImapWarmupInbox;
+use App\Services\Warmup\WarmupInbox;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(WarmupInbox::class, ImapWarmupInbox::class);
         $this->app->bind(DnsResolver::class, SystemDnsResolver::class);
         $this->app->bind(Mailbox::class, ImapMailbox::class);
         // One per worker process so SMTP connections are reused across messages

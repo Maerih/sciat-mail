@@ -7,6 +7,7 @@ use App\Models\Concerns\HasUid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class SendingServer extends Model
@@ -15,7 +16,7 @@ class SendingServer extends Model
 
     protected $fillable = [
         'workspace_id', 'name', 'type', 'config', 'status', 'hourly_limit', 'daily_limit', 'default_from_email',
-        'warmup_strategy_id', 'warmup_started_on', 'bounce_address',
+        'warmup_strategy_id', 'warmup_started_on', 'bounce_address', 'prewarmed', 'email_warmup',
     ];
 
     protected $hidden = ['config', 'webhook_secret'];
@@ -26,6 +27,8 @@ class SendingServer extends Model
             'config' => 'encrypted:array',
             'last_tested_at' => 'datetime',
             'warmup_started_on' => 'date',
+            'prewarmed' => 'boolean',
+            'email_warmup' => 'array',
         ];
     }
 
@@ -152,6 +155,9 @@ class SendingServer extends Model
 
     public function isWarmingUp(): bool
     {
+        if ($this->prewarmed) {
+            return false; // a pre-warmed server already has its reputation; no ramp needed
+        }
         $day = $this->warmupDay();
 
         return $day !== null && $day >= 1 && $day < $this->warmupStrategy->days;
@@ -166,6 +172,26 @@ class SendingServer extends Model
         ], fn ($v) => $v !== null);
 
         return $limits ? min($limits) : null;
+    }
+
+    public function emailWarmup(string $key, $default = null)
+    {
+        return ($this->email_warmup ?? [])[$key] ?? $default;
+    }
+
+    public function emailWarmupDay(): ?int
+    {
+        $start = $this->emailWarmup('started_on');
+
+        return $this->emailWarmup('enabled') && $start ? (int) Carbon::parse($start)->startOfDay()->diffInDays(now()->startOfDay()) + 1 : null;
+    }
+
+    /** Warmup emails to send today: starts at 4 and grows by 3 a day up to the chosen maximum. */
+    public function emailWarmupTarget(): int
+    {
+        $day = $this->emailWarmupDay();
+
+        return $day ? min((int) $this->emailWarmup('daily_max', 40), 1 + 3 * $day) : 0;
     }
 
     public function typeLabel(): string

@@ -10,6 +10,8 @@ Schedule::command('queue:prune-failed --hours=168')->daily();
 Schedule::command('automations:tick')->everyMinute()->withoutOverlapping();
 Schedule::command('app:backup')->dailyAt('02:30')->withoutOverlapping()
     ->when(fn () => Setting::bool('backups_enabled', true));
+Schedule::command('warmup:send')->hourly()->withoutOverlapping();
+Schedule::command('warmup:check')->everyFifteenMinutes()->withoutOverlapping();
 Schedule::command('health:check')->everyFifteenMinutes()->withoutOverlapping();
 Schedule::command('bounces:fetch')->everyFiveMinutes()->withoutOverlapping();
 Schedule::call(fn () => Cache::put('heartbeat:scheduler', now()->toIso8601String(), now()->addDay()))->everyMinute()->name('scheduler-heartbeat');

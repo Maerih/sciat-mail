@@ -124,6 +124,7 @@ class SendingServerController extends Controller
             $config[$key] = $value;
         }
         $data['config'] = $config;
+        $data['prewarmed'] = $request->boolean('prewarmed');
         if (empty($data['warmup_strategy_id'])) {
             $data['warmup_strategy_id'] = null;
             $data['warmup_started_on'] = null;

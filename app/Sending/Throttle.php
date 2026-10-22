@@ -2,6 +2,7 @@
 
 namespace App\Sending;
 
+use App\Models\SendingDomain;
 use App\Models\SendingServer;
 use Illuminate\Support\Facades\Cache;
 
@@ -41,6 +42,31 @@ class Throttle
         }
 
         return 86400 - ($now % 86400) + 5;
+    }
+
+    /** Domain warmup: one daily counter per sending domain, shared by every server. */
+    public function domainHasCapacity(SendingDomain $domain): bool
+    {
+        $allowance = $domain->dailyAllowance();
+
+        return $allowance === null || $this->domainUsed($domain) < $allowance;
+    }
+
+    public function hitDomain(SendingDomain $domain): void
+    {
+        $key = $this->domainKey($domain);
+        Cache::add($key, 0, 86500);
+        Cache::increment($key);
+    }
+
+    public function domainUsed(SendingDomain $domain): int
+    {
+        return (int) Cache::get($this->domainKey($domain), 0);
+    }
+
+    protected function domainKey(SendingDomain $domain): string
+    {
+        return "throttle:domain:{$domain->id}:day:".now()->format('Ymd');
     }
 
     protected function key(SendingServer $server, string $window): string

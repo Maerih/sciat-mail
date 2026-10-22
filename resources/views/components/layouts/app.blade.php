@@ -35,6 +35,7 @@
         ['Sending', [
             ['Sending servers', 'sending.servers.index', 'dns', 'sending.servers.*'],
             ['Warmup strategies', 'sending.warmup.index', 'local_fire_department', 'sending.warmup.*'],
+            ['Email warmup', 'sending.email-warmup.index', 'forward_to_inbox', 'sending.email-warmup.*'],
             ['Sending domains', 'sending.domains.index', 'language', 'sending.domains.*'],
             ['Tracking domains', 'sending.tracking-domains.index', 'link', 'sending.tracking-domains.*'],
             ['Email verification', 'sending.verification.index', 'verified', 'sending.verification.*'],

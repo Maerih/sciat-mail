@@ -254,6 +254,12 @@ Route::middleware(['auth', 'team'])->group(function () {
             Route::resource('servers', Controllers\SendingServerController::class)->except(['show']);
 
             Route::post('domains/{domain}/verify', [Controllers\SendingDomainController::class, 'verify'])->name('domains.verify');
+            Route::put('domains/{domain}/warmup', [Controllers\SendingDomainController::class, 'warmup'])->name('domains.warmup');
+            Route::get('email-warmup', [Controllers\EmailWarmupController::class, 'index'])->name('email-warmup.index');
+            Route::post('email-warmup/mailboxes', [Controllers\EmailWarmupController::class, 'storeMailbox'])->name('email-warmup.mailboxes.store');
+            Route::post('email-warmup/mailboxes/{mailbox}/test', [Controllers\EmailWarmupController::class, 'testMailbox'])->middleware('throttle:10,1')->name('email-warmup.mailboxes.test');
+            Route::delete('email-warmup/mailboxes/{mailbox}', [Controllers\EmailWarmupController::class, 'destroyMailbox'])->name('email-warmup.mailboxes.destroy');
+            Route::put('email-warmup/servers/{server}', [Controllers\EmailWarmupController::class, 'updateServer'])->name('email-warmup.servers.update');
             Route::resource('domains', Controllers\SendingDomainController::class)->only(['index', 'store', 'show', 'destroy']);
 
             Route::post('tracking-domains/{trackingDomain}/verify', [Controllers\TrackingDomainController::class, 'verify'])->name('tracking-domains.verify');
