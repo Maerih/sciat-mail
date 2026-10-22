@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 — 22 October 2026
+- Start-up check (`public/preflight.php`): instead of a generic "500 / Oops" page, explains a too-old PHP,
+  missing PHP extensions or unwritable folders — common after switching PHP version in cPanel.
+- Minimum PHP corrected to **8.4.1** (required by Symfony 8); PHP 8.4 recommended.
+
 ## 1.1.0 — 22 October 2026
 
 ### Team inbox

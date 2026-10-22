@@ -1,7 +1,7 @@
 # Developer guide
 
 ## Stack
-Laravel 13 · PHP 8.3+ · MySQL/MariaDB · Blade + Tailwind CSS v4 + Alpine.js · Chart.js ·
+Laravel 13 · PHP 8.4+ · MySQL/MariaDB · Blade + Tailwind CSS v4 + Alpine.js · Chart.js ·
 GrapesJS (email builder) · Symfony Mailer transports · webklex/php-imap (bounce and warmup
 mailboxes) · anthropic-ai/sdk (AI). Queue: database (shared hosting) or Redis (VPS).
 

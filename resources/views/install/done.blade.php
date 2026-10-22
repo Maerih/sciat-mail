@@ -8,7 +8,7 @@
         <div class="card-header"><div><h2 class="card-title">Add the cron job</h2><p class="text-xs text-[var(--muted)]">cPanel → Cron Jobs → Common settings: “Once Per Minute (* * * * *)”, then paste the command.</p></div></div>
         <div class="card-body space-y-3">
             <div class="flex gap-2"><div class="code flex-1">{{ $cron }}</div><button type="button" class="btn-secondary" @click="copy()" x-text="copied ? 'Copied' : 'Copy'"></button></div>
-            <p class="help">cPanel shows only the command part (after the five stars). If <code>/usr/local/bin/php</code> is not right for your host, use the PHP path from its documentation, e.g. <code>/usr/local/bin/ea-php83</code>.</p>
+            <p class="help">cPanel shows only the command part (after the five stars). If <code>/usr/local/bin/php</code> is not right for your host, use the PHP path from its documentation, e.g. <code>/usr/local/bin/ea-php84</code>.</p>
         </div>
     </div>
     <div class="card card-body mt-6 space-y-2 text-sm">

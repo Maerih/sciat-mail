@@ -5,9 +5,9 @@ namespace App\Services;
 /** Server requirements, shared by the installer and Settings → System info. */
 class Requirements
 {
-    public const PHP_VERSION = '8.3.0';
+    public const PHP_VERSION = '8.4.1';
 
-    public const EXTENSIONS = ['pdo_mysql', 'mbstring', 'openssl', 'curl', 'xml', 'zip', 'gd', 'intl', 'bcmath', 'fileinfo', 'ctype', 'tokenizer'];
+    public const EXTENSIONS = ['pdo_mysql', 'mbstring', 'openssl', 'curl', 'xml', 'dom', 'zip', 'gd', 'intl', 'bcmath', 'fileinfo', 'ctype', 'tokenizer', 'filter', 'session'];
 
     /** Functions the scheduler and queue need; hosts sometimes disable them. */
     public const FUNCTIONS = ['proc_open', 'escapeshellarg'];

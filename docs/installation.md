@@ -1,7 +1,7 @@
 # Installation & updates
 
 ## Requirements
-- PHP **8.3 or 8.4** with extensions: pdo_mysql, mbstring, openssl, curl, xml, zip, gd, intl, bcmath, fileinfo, ctype, tokenizer
+- PHP **8.4** (8.4.1 or newer) with extensions: pdo_mysql, mbstring, openssl, curl, xml, zip, gd, intl, bcmath, fileinfo, ctype, tokenizer
 - MySQL 8+ or MariaDB 10.6+
 - A cron job that runs every minute
 - Outbound access to your SMTP server / sending APIs / SMS gateways
@@ -23,7 +23,7 @@ dependencies, built assets, a fresh `.env` (with a new APP_KEY and `APP_INSTALLE
 safe root `.htaccess`.
 
 ### 2. Prepare the hosting
-1. **Select PHP Version** → 8.3 or 8.4; tick the extensions above.
+1. **Select PHP Version** → **8.4**; tick the extensions above (they are saved per PHP version — re-tick them if you ever switch version).
 2. **MySQL Databases** → create a database and user; give the user ALL PRIVILEGES.
 
 ### 3. Upload
@@ -47,7 +47,7 @@ cPanel → Cron Jobs → *Once Per Minute*, command:
 ```
 /usr/local/bin/php /home/ACCOUNT/sciat-mail/artisan schedule:run >> /dev/null 2>&1
 ```
-Use your host's PHP path if different (e.g. `/usr/local/bin/ea-php83`). Confirm under
+Use your host's PHP path if different (e.g. `/usr/local/bin/ea-php84`). Confirm under
 **Settings → Cron & queue** that the scheduler shows *Running*.
 
 ### 6. First steps inside the platform

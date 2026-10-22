@@ -10,6 +10,9 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
+// Explain missing PHP extensions or unwritable folders instead of failing with a blank 500...
+require __DIR__.'/preflight.php';
+
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
 

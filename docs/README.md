@@ -4,7 +4,7 @@ SCIAT Mail is our own mass email and SMS marketing platform. The team runs email
 programmes for each client from one place: lists, campaigns, automations, signup forms,
 websites, reports, deliverability tools and a read-only client portal.
 
-Released: 22 October 2026 · Laravel 13 / PHP 8.3+ · MySQL/MariaDB
+Released: 22 October 2026 · Laravel 13 / PHP 8.4+ · MySQL/MariaDB
 
 | Guide | For | Covers |
 |---|---|---|
