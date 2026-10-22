@@ -49,8 +49,9 @@ class BuildPackage extends Command
                 ->run('composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --no-progress')->throw());
             $this->components->task('Writing production configuration', fn () => $this->writeProductionConfig($work, $version));
 
-            // An update must never overwrite the live site's settings or uploads
-            $exclude = $this->option('update') ? [...self::EXCLUDE, '.env', 'storage'] : self::EXCLUDE;
+            // An update must never overwrite the live site's settings. storage/ only holds empty
+            // placeholder folders here, so it is kept: extracting never removes existing files.
+            $exclude = $this->option('update') ? [...self::EXCLUDE, '.env'] : self::EXCLUDE;
             foreach ($exclude as $path) {
                 File::isDirectory("{$work}/{$path}") ? File::deleteDirectory("{$work}/{$path}") : File::delete("{$work}/{$path}");
             }

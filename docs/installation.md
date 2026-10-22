@@ -82,7 +82,7 @@ php artisan migrate --force && php artisan db:seed --force && php artisan storag
 1. On the development machine: commit, `npm run build`, `php artisan app:package --update`.
 2. In the platform: **Settings → Maintenance → Back up now** and download the backup.
 3. Upload `sciat-mail-update-<version>.zip` and extract it over the existing folder. It never
-   contains `.env` or `storage/`, so settings and uploads are kept.
+   contains `.env` (settings are kept); its `storage/` holds only empty folders, so uploads are kept too.
 4. A banner appears for administrators: **Settings → Maintenance → Apply update** (runs the
    database migrations and clears caches).
 

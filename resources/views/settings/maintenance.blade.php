@@ -16,7 +16,7 @@
                     <summary class="cursor-pointer font-medium">How to install an update on shared hosting</summary>
                     <ol class="mt-2 list-decimal space-y-1 pl-5 text-[var(--muted)]">
                         <li>Create a backup below and download it.</li>
-                        <li>Upload the <strong>update</strong> zip (built with <code>php artisan app:package --update</code>) and extract it over the existing folder. It never contains <code>.env</code> or <code>storage</code>, so your settings and uploads are kept.</li>
+                        <li>Upload the <strong>update</strong> zip (built with <code>php artisan app:package --update</code>) and extract it over the existing folder. It never contains <code>.env</code>, and its <code>storage</code> folder only holds empty folders, so your settings and uploads are kept.</li>
                         <li>Come back here and click <strong>Apply update</strong>.</li>
                     </ol>
                 </details>

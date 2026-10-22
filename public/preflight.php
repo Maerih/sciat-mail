@@ -14,11 +14,18 @@ foreach (['pdo_mysql', 'mbstring', 'openssl', 'curl', 'xml', 'dom', 'zip', 'gd',
         $sciatProblems[] = "The PHP extension “{$sciatExtension}” is not enabled.";
     }
 }
-foreach (['storage', 'storage/framework', 'storage/framework/views', 'storage/framework/sessions', 'storage/framework/cache', 'storage/logs', 'bootstrap/cache'] as $sciatPath) {
+foreach (['storage', 'storage/app', 'storage/app/public', 'storage/app/private', 'storage/framework', 'storage/framework/views', 'storage/framework/sessions', 'storage/framework/cache', 'storage/framework/cache/data', 'storage/logs', 'bootstrap/cache'] as $sciatPath) {
     $sciatFull = __DIR__.'/../'.$sciatPath;
+    if (! is_dir($sciatFull)) {
+        @mkdir($sciatFull, 0775, true); // e.g. an update was extracted into a fresh folder
+    }
     if (! is_dir($sciatFull) || ! is_writable($sciatFull)) {
         $sciatProblems[] = "The folder “{$sciatPath}” is missing or not writable (set permissions to 755 or 775).";
     }
+}
+
+if (! is_file(__DIR__.'/../.env')) {
+    $sciatProblems[] = 'The settings file “.env” is missing. For a new installation upload the full package (sciat-mail-vX.zip, not the “update” zip); when updating, extract the update over your existing folder so its .env is kept. In File Manager, enable “Show Hidden Files” to see it.';
 }
 
 if ($sciatProblems) {
