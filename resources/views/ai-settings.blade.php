@@ -1,7 +1,8 @@
 <x-layouts.app title="AI assistant">
-    <x-page-header title="AI assistant" subtitle="Subject line ideas, rewrites and email drafts inside campaigns and automations. One engine serves every client." />
-    <div class="grid gap-6 lg:grid-cols-3">
-        <form method="POST" action="{{ route('platform.ai.update') }}" class="card card-body space-y-4 lg:col-span-2" x-data="{ provider: @js(old('ai_provider', $provider ?? '')) }">
+    <x-settings-frame tab="ai">
+    <p class="-mt-2 text-sm text-[var(--muted)]">Subject line ideas, rewrites and email drafts inside campaigns and automations. One engine serves every client.</p>
+    <div class="grid gap-6 xl:grid-cols-3">
+        <form method="POST" action="{{ route('platform.ai.update') }}" class="card card-body space-y-4 xl:col-span-2" x-data="{ provider: @js(old('ai_provider', $provider ?? '')) }">
             @csrf @method('PUT')
             <div>
                 <label class="label">Engine</label>
@@ -30,4 +31,5 @@
             <p class="help border-t border-gray-100 pt-3">Email content and briefs are sent to the selected engine when someone uses an AI feature. Nothing is sent otherwise.</p>
         </div>
     </div>
+    </x-settings-frame>
 </x-layouts.app>

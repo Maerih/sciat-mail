@@ -35,6 +35,11 @@ class SendAutomationEmail implements ShouldQueue
         }
 
         $campaign = $delivery->campaign;
+        if ($delivery->workspace->isSuspended()) {
+            $delivery->forceFill(['status' => 'failed', 'error' => 'Sending is suspended for this client.'])->save();
+
+            return;
+        }
         if (Quota::emailsRemaining($delivery->workspace) === 0) {
             $delivery->forceFill(['status' => 'failed', 'error' => 'Monthly email limit reached.'])->save();
 

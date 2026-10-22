@@ -42,7 +42,7 @@ class CampaignController extends Controller
             'from_name' => $workspace->company ?: $workspace->name,
             'from_email' => $workspace->contact_email,
             'reply_to' => $workspace->contact_email,
-        ]);
+        ] + Campaign::defaultOptions());
 
         if ($campaign->isAbTest()) {
             $campaign->variants()->createMany([['label' => 'A'], ['label' => 'B']]);

@@ -305,7 +305,7 @@ class AutomationController extends Controller
             'from_name' => $list->from_name,
             'from_email' => $list->from_email,
             'reply_to' => $list->reply_to ?: $list->from_email,
-        ]);
+        ] + Campaign::defaultOptions());
         $campaign->status = 'automation';
         $campaign->save();
 

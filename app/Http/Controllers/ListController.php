@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MailList;
+use App\Models\Setting;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class ListController extends Controller
         return view('lists.form', ['list' => new MailList([
             'from_name' => Workspace::current()->company ?: Workspace::current()->name,
             'from_email' => Workspace::current()->contact_email,
+            'double_optin' => Setting::bool('default_double_optin', false),
         ]), 'servers' => Workspace::current()->availableServers()->orderBy('name')->get()]);
     }
 

@@ -6,6 +6,7 @@ use App\Models\Campaign;
 use App\Models\Delivery;
 use App\Models\SendingDomain;
 use App\Models\SendingServer;
+use App\Models\Setting;
 use App\Models\Subscriber;
 use App\Services\RssFeed;
 use Symfony\Component\Mailer\Header\MetadataHeader;
@@ -201,8 +202,10 @@ class MessageBuilder
     {
         $headers = $email->getHeaders();
         // RFC 8058 one-click unsubscribe (required by Gmail/Yahoo for bulk senders)
-        $headers->addTextHeader('List-Unsubscribe', '<'.$unsubscribeUrl.'>');
-        $headers->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+        if (Setting::bool('one_click_unsubscribe', true)) {
+            $headers->addTextHeader('List-Unsubscribe', '<'.$unsubscribeUrl.'>');
+            $headers->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+        }
         $headers->addTextHeader('Precedence', 'bulk');
         $headers->addTextHeader('X-SM-Delivery', $delivery->uid);
         if ($delivery->campaign) {

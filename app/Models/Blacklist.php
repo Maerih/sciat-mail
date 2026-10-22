@@ -26,7 +26,7 @@ class Blacklist extends Model
     public static function isBlocked(string $email, int $workspaceId): bool
     {
         return static::where('email', strtolower($email))
-            ->where(fn ($q) => $q->whereNull('workspace_id')->orWhere('workspace_id', $workspaceId))
+            ->where(fn ($q) => $q->where('workspace_id', $workspaceId)->when(Setting::bool('use_global_blacklist', true), fn ($w) => $w->orWhereNull('workspace_id')))
             ->exists();
     }
 }

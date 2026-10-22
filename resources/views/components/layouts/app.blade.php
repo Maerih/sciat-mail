@@ -147,6 +147,13 @@
     </header>
 
     <main class="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        @php $suspendedWorkspace = \App\Models\Workspace::current(); @endphp
+        @if ($suspendedWorkspace?->isSuspended())
+            <div class="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <x-icon name="block" class="mt-0.5 size-5" />
+                <div><p class="font-semibold">Sending is suspended for {{ $suspendedWorkspace->name }}</p><p>{{ $suspendedWorkspace->suspension_reason }}. Clean the affected lists, then an administrator can resume sending{!! auth()->user()->isAdmin() ? ' under <a href="'.route('settings.show', 'health').'" class="underline">Settings → Sending health</a>' : '' !!}.</p></div>
+            </div>
+        @endif
         @include('partials.flash')
         {{ $slot }}
     </main>

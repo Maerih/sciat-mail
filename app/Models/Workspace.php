@@ -13,6 +13,13 @@ class Workspace extends Model
 
     protected $fillable = ['name', 'timezone', 'company', 'address', 'contact_email', 'website', 'brand_color', 'logo_path'];
 
+    protected $casts = ['sending_suspended_at' => 'datetime', 'health_reviewed_at' => 'datetime'];
+
+    public function isSuspended(): bool
+    {
+        return $this->sending_suspended_at !== null;
+    }
+
     protected static ?Workspace $current = null;
 
     /**

@@ -12,6 +12,7 @@
     <div class="card p-8">
         <h1 class="text-center text-[22px] font-bold">Log in to your account</h1>
         <p class="mt-1.5 text-center text-sm text-[var(--muted)]">Welcome back. Enter your details to continue.</p>
+        @if (session('success'))<div class="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700">{{ session('success') }}</div>@endif
         <form method="POST" action="{{ route('login') }}" class="mt-7 space-y-4">
             @csrf
             <x-field name="email" type="email" label="Username or Email" autofocus autocomplete="username" required />
@@ -25,9 +26,12 @@
                 </div>
                 @error('password')<p class="error">{{ $message }}</p>@enderror
             </div>
-            <label class="flex items-center gap-2 text-sm text-[var(--muted)]">
-                <input type="checkbox" name="remember" value="1" class="rounded border-[var(--line)] bg-[var(--surface-2)] text-brand-600 focus:ring-brand-500"> Remember me
-            </label>
+            <div class="flex items-center justify-between">
+                <label class="flex items-center gap-2 text-sm text-[var(--muted)]">
+                    <input type="checkbox" name="remember" value="1" class="rounded border-[var(--line)] bg-[var(--surface-2)] text-brand-600 focus:ring-brand-500"> Remember me
+                </label>
+                <a href="{{ route('password.request') }}" class="text-sm text-brand-600 hover:underline">Forgot password?</a>
+            </div>
             <button class="btn-primary w-full py-2.5"><x-icon name="lock" class="size-4.5" /> Log in</button>
         </form>
     </div>

@@ -10,8 +10,10 @@ use Illuminate\View\View;
 /** Admin-only white-label settings for the platform itself. */
 class PlatformSettingsController extends Controller
 {
-    public function edit(): View
+    public function edit(): View|RedirectResponse
     {
+        return redirect()->route('settings.show', 'general');
+
         return view('platform-settings', [
             'name' => Setting::get('platform_name'),
             'color' => Setting::get('platform_color'),

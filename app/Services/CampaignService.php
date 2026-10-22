@@ -29,6 +29,10 @@ class CampaignService
             ? $add('recipients', 'Recipients', 'ok', number_format($recipients).' subscribers will receive this campaign', 'recipients')
             : $add('recipients', 'Recipients', 'error', 'No subscribed recipients match the selected lists/segments', 'recipients');
 
+        if ($campaign->workspace->isSuspended()) {
+            $add('health', 'Sending health', 'error', 'Sending is suspended for this client: '.$campaign->workspace->suspension_reason.'. An administrator must review it under Settings → Sending health.', null);
+        }
+
         $remaining = Quota::emailsRemaining($campaign->workspace);
         if ($remaining !== null && $recipients > 0) {
             $recipients > $remaining

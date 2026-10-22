@@ -10,6 +10,7 @@ use App\Services\Bounces\ImapMailbox;
 use App\Services\Bounces\Mailbox;
 use App\Services\Dns\DnsResolver;
 use App\Services\Dns\SystemDnsResolver;
+use App\Services\SystemMailConfig;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -32,6 +33,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::defaultView('partials.pagination');
+
+        try {
+            SystemMailConfig::apply();
+        } catch (\Throwable) {
+            // settings table not migrated yet (fresh install)
+        }
 
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->attributes->get('api_token')?->id ?: $request->ip()));
     }

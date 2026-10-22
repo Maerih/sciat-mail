@@ -133,6 +133,16 @@ class Campaign extends Model
         })->all();
     }
 
+    /** Tracking and failure-handling defaults from Settings → Sending defaults. @return array<string, bool> */
+    public static function defaultOptions(): array
+    {
+        return [
+            'track_open' => Setting::bool('default_track_open', true),
+            'track_click' => Setting::bool('default_track_click', true),
+            'skip_failed' => Setting::bool('default_skip_failed', true),
+        ];
+    }
+
     public function audiences(): HasMany
     {
         return $this->hasMany(CampaignAudience::class);
@@ -179,7 +189,8 @@ class Campaign extends Model
             ->whereIn('mail_list_id', MailList::where('workspace_id', $workspaceId)->select('id'))
             ->whereNotExists(fn ($q) => $q->from('blacklists')
                 ->whereColumn('blacklists.email', 'subscribers.email')
-                ->where(fn ($w) => $w->whereNull('workspace_id')->orWhere('workspace_id', $workspaceId)));
+                ->where(fn ($w) => $w->where('workspace_id', $workspaceId)
+                    ->when(Setting::bool('use_global_blacklist', true), fn ($g) => $g->orWhereNull('workspace_id'))));
 
         if ($includes->isEmpty()) {
             return $query->whereRaw('1 = 0');

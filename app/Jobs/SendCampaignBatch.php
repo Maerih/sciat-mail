@@ -35,6 +35,11 @@ class SendCampaignBatch implements ShouldQueue
         if (! $campaign || ! in_array($campaign->status, ['sending', 'testing'], true)) {
             return; // paused or cancelled: pending rows are picked up again on resume
         }
+        if ($campaign->workspace->isSuspended()) {
+            $campaign->forceFill(['status' => 'paused', 'last_error' => 'Paused: sending is suspended for this client.'])->save();
+
+            return;
+        }
         $variants = $campaign->isAbTest() ? $campaign->variants()->get()->keyBy('id') : collect();
 
         if (! $campaign->inSendingWindow()) {

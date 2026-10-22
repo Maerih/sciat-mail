@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuthenticateApiToken;
+use App\Http\Middleware\CheckSiteOnline;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureClient;
 use App\Http\Middleware\EnsureTeam;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // API tokens must resolve the client before route-model binding runs
         $middleware->api(prepend: [AuthenticateApiToken::class]);
+        $middleware->web(append: [CheckSiteOnline::class]);
         $middleware->alias([
             'workspace' => SetCurrentWorkspace::class,
             'admin' => EnsureAdmin::class,

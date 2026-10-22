@@ -32,6 +32,10 @@ Route::post('/webhooks/mailgun/{server}/{secret}', [Pub\WebhookController::class
 Route::middleware('guest')->group(function () {
     Route::get('/login', [Controllers\AuthController::class, 'show'])->name('login');
     Route::post('/login', [Controllers\AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::get('/forgot-password', [Controllers\PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/forgot-password', [Controllers\PasswordResetController::class, 'email'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/reset-password/{token}', [Controllers\PasswordResetController::class, 'reset'])->name('password.reset');
+    Route::post('/reset-password', [Controllers\PasswordResetController::class, 'update'])->middleware('throttle:10,1')->name('password.update');
 });
 Route::post('/logout', [Controllers\AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
@@ -59,6 +63,15 @@ Route::middleware(['auth', 'team'])->group(function () {
 
     Route::middleware('admin')->group(function () {
         Route::get('/workspaces', [Controllers\WorkspaceController::class, 'index'])->name('workspaces.index');
+        Route::get('/settings', [Controllers\SettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings/general', [Controllers\SettingsController::class, 'updateGeneral'])->name('settings.general');
+        Route::put('/settings/sending', [Controllers\SettingsController::class, 'updateSending'])->name('settings.sending');
+        Route::put('/settings/mail', [Controllers\SettingsController::class, 'updateMail'])->name('settings.mail');
+        Route::put('/settings/health', [Controllers\SettingsController::class, 'updateHealth'])->name('settings.health');
+        Route::post('/settings/health/{workspace}/lift', [Controllers\SettingsController::class, 'liftSuspension'])->name('settings.health.lift');
+        Route::post('/settings/mail/test', [Controllers\SettingsController::class, 'testMail'])->name('settings.mail.test');
+        Route::post('/settings/cron', [Controllers\SettingsController::class, 'cron'])->name('settings.cron');
+        Route::get('/settings/{tab}', [Controllers\SettingsController::class, 'show'])->name('settings.show');
         Route::get('/platform/ai', [Controllers\AiController::class, 'settings'])->name('platform.ai');
         Route::put('/platform/ai', [Controllers\AiController::class, 'saveSettings'])->name('platform.ai.update');
         Route::get('/platform', [Controllers\PlatformSettingsController::class, 'edit'])->name('platform.edit');

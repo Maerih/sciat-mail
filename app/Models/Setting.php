@@ -23,6 +23,14 @@ class Setting extends Model
         return static::all_()[$key] ?? $default;
     }
 
+    /** Boolean flags are stored as '1' / '0'. */
+    public static function bool(string $key, bool $default = false): bool
+    {
+        $value = static::get($key);
+
+        return $value === null ? $default : $value === '1';
+    }
+
     /** @param array<string, ?string> $values */
     public static function put(array $values): void
     {
