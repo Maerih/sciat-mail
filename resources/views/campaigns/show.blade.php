@@ -62,17 +62,74 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <x-stat label="Delivered" :value="number_format($stats['delivered'])" :hint="$stats['failed'] ? number_format($stats['failed']).' failed · '.number_format($stats['skipped']).' skipped' : number_format($stats['total']).' recipients'" />
-        <x-stat label="Open rate" :value="$stats['open_rate'].'%'" :hint="number_format($stats['opened']).' unique · '.number_format($stats['total_opens']).' total'" tone="green" />
-        <x-stat label="Click rate" :value="$stats['click_rate'].'%'" :hint="number_format($stats['clicked']).' unique · CTOR '.$stats['ctor'].'%'" tone="green" />
-        <x-stat label="Unsubscribed" :value="$stats['unsubscribe_rate'].'%'" :hint="number_format($stats['unsubscribed']).' people'" />
+    @php
+        $pctOf = fn ($n) => $stats['total'] ? round($n / $stats['total'] * 100, 1) : 0;
+        $insight = match (true) {
+            $stats['delivered'] === 0 => null,
+            $stats['open_rate'] >= 30 => ['celebration', 'Great engagement', 'An open rate of '.$stats['open_rate'].'% is well above the typical 20–25%. Reuse what worked here in your next campaign.', ['border-emerald-200 bg-emerald-50', 'text-emerald-600', 'text-emerald-700']],
+            $stats['open_rate'] >= 15 => ['thumb_up', 'Solid performance', 'An open rate of '.$stats['open_rate'].'% is in line with industry averages. A/B test subject lines to push it further.', ['border-blue-200 bg-blue-50', 'text-blue-600', 'text-blue-700']],
+            default => ['lightbulb', 'Room to grow', 'Your open rate of '.$stats['open_rate'].'% has room for improvement. Try personalising subject lines or sending at different times.', ['border-amber-200 bg-amber-50', 'text-amber-600', 'text-amber-700']],
+        };
+    @endphp
+    @if ($insight)
+        <div class="mb-6 flex items-start gap-3 rounded-xl border px-5 py-4 {{ $insight[3][0] }}">
+            <x-icon :name="$insight[0]" class="mt-0.5 size-5 {{ $insight[3][1] }}" />
+            <div><p class="font-semibold {{ $insight[3][2] }}">{{ $insight[1] }}</p><p class="mt-0.5 text-sm text-[var(--muted)]">{{ $insight[2] }}</p></div>
+        </div>
+    @endif
+
+    <div class="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+        @foreach ([
+            ['group', 'Recipients', $stats['total'], null, 'bg-blue-50 text-blue-600'],
+            ['check_circle', 'Delivered', $stats['delivered'], $pctOf($stats['delivered']), 'bg-emerald-50 text-emerald-600'],
+            ['error', 'Failed', $stats['failed'], $pctOf($stats['failed']), 'bg-red-50 text-red-600'],
+            ['block', 'Skipped', $stats['skipped'], $pctOf($stats['skipped']), 'bg-gray-100 text-gray-500'],
+            ['schedule_send', 'Pending', $stats['pending'], $pctOf($stats['pending']), 'bg-amber-50 text-amber-600'],
+        ] as [$icon, $label, $value, $pct, $tile])
+            <div class="card card-body !p-4">
+                <div class="flex items-center justify-between"><span class="icon-tile size-9 {{ $tile }}"><x-icon :name="$icon" class="size-5" /></span>@if ($pct !== null)<span class="text-xs text-[var(--muted)] tabular-nums">{{ $pct }}%</span>@endif</div>
+                <div class="stat-label mt-3">{{ $label }}</div>
+                <div class="mt-1 text-[24px] leading-none font-bold tabular-nums">{{ number_format($value) }}</div>
+            </div>
+        @endforeach
     </div>
-    <div class="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <x-stat label="Bounce rate" :value="$stats['bounce_rate'].'%'" :hint="'Hard '.($bounceTypes['hard'] ?? 0).' · soft '.($bounceTypes['soft'] ?? 0)" :tone="$stats['bounce_rate'] > 2 ? 'red' : 'gray'" />
-        <x-stat label="Spam complaints" :value="$stats['complaint_rate'].'%'" :hint="number_format($stats['complained']).' reports'" :tone="$stats['complaint_rate'] > 0.1 ? 'red' : 'gray'" />
-        <x-stat label="Started" :value="$campaign->started_at?->setTimezone($campaign->workspace->timezone)->format('M j, H:i') ?? '—'" />
-        <x-stat label="Finished" :value="$campaign->finished_at?->setTimezone($campaign->workspace->timezone)->format('M j, H:i') ?? '—'" />
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div class="card">
+            <div class="card-header"><h2 class="card-title">Rate summary</h2></div>
+            @foreach ([
+                ['Opened', $stats['open_rate'], number_format($stats['opened']).' / '.number_format($stats['delivered']), 'bg-brand-500', 'opens'],
+                ['Did not open', $stats['delivered'] ? round(100 - $stats['open_rate'], 2) : 0, number_format(max(0, $stats['delivered'] - $stats['opened'])).' recipients', 'bg-gray-400', null],
+                ['Clicked', $stats['click_rate'], number_format($stats['clicked']).' / '.number_format($stats['delivered']), 'bg-blue-600', 'clicks'],
+                ['Unsubscribed', $stats['unsubscribe_rate'], number_format($stats['unsubscribed']).' recipients', 'bg-amber-500', 'unsubscribes'],
+                ['Bounced', $stats['bounce_rate'], 'Hard '.($bounceTypes['hard'] ?? 0).' · soft '.($bounceTypes['soft'] ?? 0), 'bg-red-500', 'bounces'],
+                ['Reported as spam', $stats['complaint_rate'], number_format($stats['complained']).' reports', 'bg-red-500', 'complaints'],
+            ] as [$label, $rate, $detail, $dot, $log])
+                <a href="{{ $log ? route('campaigns.log', [$campaign, $log]) : '#' }}" class="flex items-center gap-3 border-b border-[var(--line)] px-6 py-3 text-sm last:border-0 hover:bg-[var(--surface-2)]">
+                    <span class="size-2 rounded-full {{ $dot }}"></span>
+                    <span class="flex-1">{{ $label }}</span>
+                    <span class="font-semibold tabular-nums">{{ number_format($rate, 2) }}%</span>
+                    <span class="w-24 text-right text-xs text-[var(--muted)]">{{ $detail }}</span>
+                    @if ($log)<x-icon name="arrow_forward" class="size-4 text-[var(--muted)]" />@else<span class="w-4"></span>@endif
+                </a>
+            @endforeach
+        </div>
+        @foreach ([
+            ['visibility', 'Open rate', $stats['open_rate'], 'opens', [['Successful deliveries', number_format($stats['delivered'])], ['Unique opens', number_format($stats['opened'])], ['Total opens', number_format($stats['total_opens'])], ['Click-to-open rate', $stats['ctor'].'%']]],
+            ['ads_click', 'Click rate', $stats['click_rate'], 'clicks', [['Total clicks', number_format($stats['total_clicks'])], ['Unique clicks', number_format($stats['clicked'])], ['Abuse reports', number_format($stats['complained'])], ['Started', $campaign->started_at?->setTimezone($campaign->workspace->timezone)->format('M j, H:i') ?? '—']]],
+        ] as [$icon, $label, $rate, $log, $rows])
+            <div class="card">
+                <div class="card-header"><div class="flex items-center gap-2"><x-icon :name="$icon" class="size-5 text-[var(--muted)]" /><h2 class="card-title">{{ $label }}</h2></div>
+                    <a href="{{ route('campaigns.log', [$campaign, $log]) }}" class="flex items-center gap-1 text-xs text-brand-600 hover:underline"><x-icon name="open_in_new" class="size-3.5" /> {{ ucfirst(rtrim($log, 's')) }} log</a></div>
+                <div class="card-body">
+                    <div class="text-[32px] leading-none font-bold tabular-nums">{{ number_format($rate, 2) }}%</div>
+                    <div class="mt-3 h-1.5 rounded-full bg-[var(--surface-2)]"><div class="h-1.5 rounded-full bg-brand-500" style="width: {{ min(100, $rate) }}%"></div></div>
+                    <dl class="mt-4 space-y-2 text-sm">
+                        @foreach ($rows as [$k, $v])<div class="flex justify-between"><dt class="text-[var(--muted)]">{{ $k }}</dt><dd class="font-medium tabular-nums">{{ $v }}</dd></div>@endforeach
+                    </dl>
+                </div>
+            </div>
+        @endforeach
     </div>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-3">

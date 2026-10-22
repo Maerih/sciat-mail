@@ -51,6 +51,12 @@ class ListController extends Controller
             ->groupBy('d')->pluck('c', 'd');
         $days = collect(range(29, 0))->mapWithKeys(fn ($i) => [now()->subDays($i)->toDateString() => (int) ($growth[now()->subDays($i)->toDateString()] ?? 0)]);
 
+        $monthly = $list->subscribers()->toBase()
+            ->selectRaw("date_format(created_at, '%Y-%m') as m, count(*) as c")
+            ->where('created_at', '>=', now()->startOfMonth()->subMonths(5))
+            ->groupBy('m')->pluck('c', 'm');
+        $months = collect(range(5, 0))->mapWithKeys(fn ($i) => [now()->startOfMonth()->subMonths($i)->format('M Y') => (int) ($monthly[now()->startOfMonth()->subMonths($i)->format('Y-m')] ?? 0)]);
+
         $engagement = $list->subscribers()->toBase()
             ->join('deliveries', 'deliveries.subscriber_id', '=', 'subscribers.id')
             ->where('deliveries.kind', 'campaign')->whereNotNull('deliveries.sent_at')
@@ -65,6 +71,10 @@ class ListController extends Controller
             'days' => $days,
             'openRate' => $engagement->sent ? round($engagement->opened / $engagement->sent * 100, 1) : 0,
             'clickRate' => $engagement->sent ? round($engagement->clicked / $engagement->sent * 100, 1) : 0,
+            'months' => $months,
+            'segmentCount' => $list->segments()->count(),
+            'formCount' => $list->forms()->count(),
+            'recent' => $list->subscribers()->latest('id')->limit(5)->get(),
         ]);
     }
 

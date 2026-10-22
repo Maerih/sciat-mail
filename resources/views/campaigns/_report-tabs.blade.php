@@ -1,6 +1,8 @@
-<div class="mb-6 flex gap-6 overflow-x-auto border-b border-gray-200">
-    <a href="{{ route('campaigns.show', $campaign) }}" @class(['tab', 'active' => request()->routeIs('campaigns.show')])>Overview</a>
-    @foreach (\App\Http\Controllers\CampaignReportController::LOGS as $key => $label)
-        <a href="{{ route('campaigns.log', [$campaign, $key]) }}" @class(['tab', 'active' => request()->route('log') === $key])>{{ $label }}</a>
-    @endforeach
-</div>
+@php
+    $logIcons = ['deliveries' => 'outgoing_mail', 'opens' => 'visibility', 'clicks' => 'ads_click', 'bounces' => 'replay', 'complaints' => 'flag', 'unsubscribes' => 'unsubscribe'];
+    $tabs = [['Overview', route('campaigns.show', $campaign), request()->routeIs('campaigns.show'), 'auto_graph']];
+    foreach (\App\Http\Controllers\CampaignReportController::LOGS as $key => $label) {
+        $tabs[] = [$label, route('campaigns.log', [$campaign, $key]), request()->route('log') === $key, $logIcons[$key] ?? 'article'];
+    }
+@endphp
+<x-pill-tabs :items="$tabs" />
