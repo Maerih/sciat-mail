@@ -78,7 +78,7 @@ class InboxMailboxController extends Controller
             'smtp_encryption' => 'required|in:ssl,tls,none',
             'username' => 'required|string|max:190',
             'password' => [$existing ? 'nullable' : 'required', 'string', 'max:500'],
-            'signature' => 'nullable|string|max:5000',
+            'signature' => 'nullable|string|max:20000',
             'color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'status' => 'required|in:active,inactive',
             'members' => 'nullable|array',
