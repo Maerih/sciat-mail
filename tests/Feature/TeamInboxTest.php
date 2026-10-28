@@ -27,7 +27,7 @@ class TeamInboxTest extends TestCase
     {
         parent::setUp();
         $this->mailbox = InboxMailbox::create(['name' => 'Info', 'email' => 'info@sciatafrica.test', 'imap_host' => 'mail.sciatafrica.test', 'smtp_host' => 'mail.sciatafrica.test',
-            'username' => 'info@sciatafrica.test', 'password' => 'secret', 'signature' => '<p>— SCIAT Africa</p>']);
+            'username' => 'info@sciatafrica.test', 'password' => 'secret', 'signature' => '<p>— SCIAT Africa</p><img src="/brand/sciat-eagle-white.png" alt="">']);
         $this->client = new FakeMailboxClient;
         $this->app->instance(MailboxClient::class, $this->client);
         $this->app->instance(InboxMailer::class, new InboxMailer($this->client, $this->transport));
@@ -79,6 +79,7 @@ class TeamInboxTest extends TestCase
         $this->assertStringContainsString('In-Reply-To: <m1@client.test>', $sent);
         $this->assertStringContainsString('Subject: Re: Need a penetration test', $sent);
         $this->assertStringContainsString('SCIAT Africa', $sent, 'signature added');
+        $this->assertStringContainsString(rtrim(config('app.url'), '/').'/brand/sciat-eagle-white.png', $sent, 'relative logo path made absolute');
         $this->assertCount(1, $this->client->appended, 'copy saved to Sent');
         $reply = InboxMessage::where('direction', 'out')->sole();
         $this->assertSame($thread->id, $reply->inbox_thread_id);

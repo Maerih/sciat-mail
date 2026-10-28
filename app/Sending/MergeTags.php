@@ -35,6 +35,17 @@ class MergeTags
         }, $content);
     }
 
+    /**
+     * Email clients cannot resolve "/brand/logo.png": turn root-relative src/href values into
+     * absolute URLs on the platform's own domain (APP_URL).
+     */
+    public static function absoluteUrls(string $html, ?string $base = null): string
+    {
+        $base = rtrim($base ?? (string) config('app.url'), '/');
+
+        return preg_replace('#\b(src|href|background)=(["\'])/(?!/)#i', '$1=$2'.$base.'/', $html);
+    }
+
     public static function subscriberValues(?Subscriber $subscriber): array
     {
         if (! $subscriber) {

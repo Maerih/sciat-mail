@@ -110,7 +110,7 @@ class MessageBuilder
     public function renderHtml(Campaign $campaign, Delivery $delivery, array $values, bool $track = true): string
     {
         $campaign = $this->spun($campaign, $delivery);
-        $html = MergeTags::render((string) $campaign->html, $values);
+        $html = MergeTags::absoluteUrls(MergeTags::render((string) $campaign->html, $values));
         $html = $this->ensureHtmlFooter($html, $values);
 
         if ($campaign->preheader) {

@@ -7,6 +7,7 @@ use App\Models\InboxMessage;
 use App\Models\InboxThread;
 use App\Models\User;
 use App\Sending\HtmlToText;
+use App\Sending\MergeTags;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Symfony\Component\Mailer\Transport\Dsn;
@@ -38,6 +39,7 @@ class InboxMailer
                 .'<blockquote style="margin:4px 0 0;padding-left:12px;border-left:3px solid #e5e7eb;color:#4b5563">'.($parent->body_html ?: nl2br(e((string) $parent->body_text))).'</blockquote>';
         }
 
+        $html = MergeTags::absoluteUrls($html);
         $email = (new Email)
             ->from(new Address($mailbox->email, $mailbox->from_name ?: $mailbox->name))
             ->to(...$to)->subject($subject)->html($html)->text(HtmlToText::convert($html));
